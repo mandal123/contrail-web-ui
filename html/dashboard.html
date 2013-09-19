@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<!--
+ Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
+-->
+<html lang="en">
+<head>
+    <meta charset="utf-8" content="">
+    <title>Contrail Controller</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Contrail Systems">
+     <!--Bootstrap Styles-->
+    <link href="/assets/bootstrap/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="/assets/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="/assets/font-awesome/css/font-awesome.min.css"/>
+
+    <!--[if IE 7]>
+    <link rel="stylesheet" href="/assets/font-awesome/css/font-awesome-ie7.min.css"/>
+    <![endif]-->
+
+    <!--Fonts-->
+    <link rel="stylesheet" href="/assets/fonts-opensans/openSans.css"/>
+
+    <!--[if lte IE 8]>
+    <!-- <link rel="stylesheet" href="/css/contrail-ie.min.css"/>
+    <![endif]-->
+
+    <!--Kendo Styles-->
+    <link rel="stylesheet" href="/assets/kendoui/styles/kendo.common.min.css">
+    <link rel="stylesheet" href="/assets/kendoui/styles/kendo.dataviz.min.css">
+    <link rel="stylesheet" href="/assets/kendoui/styles/kendo.dataviz.blueopal.min.css">
+    <link rel="stylesheet" href="/css/kendo.contrail.css"/>
+
+    <!--D3 Styles-->
+    <link href="/css/nv.d3.contrail.css" rel="stylesheet">
+    
+     <!--Qtip tooltip CSS-->
+    <!--<link rel="stylesheet" type="text/css" href="/css/jquery.qtip.css"/>-->
+
+    <!--Contrail Styles-->
+    <link rel="stylesheet" href="/css/vncon-web.css">
+    <link rel="stylesheet" href="/css/contrail.layout.css" />
+    <link rel="stylesheet" href="/css/contrail.elements.css" />
+    <link rel="stylesheet" href="/css/contrail.responsive.css" />
+    <link rel="stylesheet" href="/css/contrail.custom.css" />
+   
+</head>
+
+<body class="navbar-fixed">
+<div id="infoWindow" class="modal modal-420 hide" tabindex="-1" style="z-index:1051;">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="icon-remove"></i></button>
+        <h6 class="modal-header-title"></h6>
+    </div>
+    <div class="modal-body">
+        <span id="infowindow-message" class="pull-left"></span>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-mini btn-primary" data-dismiss="modal" aria-hidden="true" >Close</button>
+    </div>
+</div>
+<div id="header" class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container-fluid">
+            <a href="#" class="brand">
+            	<img src="/img/juniper-networks-icon.png"/>
+                <img class="logo" src="/img/juniper-networks-logo.png"/>
+            </a>
+            <ul class="nav ace-nav pull-right">
+                <li onclick="showMoreAlerts();">
+                    <a href="javascript:void(0);">
+                        <i class="icon-bell-alt icon-only icon-2"></i>
+                        <span id="alert_info">Alerts</span>
+                        <!-- <i class="icon-caret-down"></i> -->
+                    </a> 
+
+                    <!--<ul class="pull-right dropdown-navbar navbar-pink dropdown-menu dropdown-caret dropdown-closer">
+                        <li class="nav-header">
+                            <i class="icon-warning-sign"></i>
+                            0 New Alert
+                        </li>
+                        <!--
+                        <li>
+                            <a href="#">
+                                <div class="clearfix">
+											<span class="pull-left">
+												<i class="btn btn-mini no-hover btn-pink icon-comment"></i>
+												New Comments
+											</span>
+                                    <span class="pull-right badge badge-info">+12</span>
+                                </div>
+                            </a>
+                        </li>
+                        
+                        <li class="pull-left" onclick="showMoreAlerts();">
+                            <a href="javascript:void(0);"> See Old Alerts <i class="icon-arrow-right"></i>
+                            </a>
+                        </li>
+                    </ul> -->
+                </li>
+                <li id="user-profile" class="hide">
+                    <a data-toggle="dropdown" href="#" class="user-menu dropdown-toggle">
+                        <i class="icon-user icon-only icon-2"></i>
+                        <span id="user_info"></span>
+                        <i class="icon-caret-down"></i>
+                    </a>
+                    <ul class="pull-right dropdown-menu dropdown-caret dropdown-closer" id="user_menu">
+                        <li>
+                            <a href="/logout">
+                                <i class="icon-off"></i>
+                                Logout
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <!--/.container-fluid-->
+    </div>
+    <!--/.navbar-inner-->
+</div>
+<!-- /.navbar #header -->
+
+<div class="container-fluid" id="main-container">
+    <a id="menu-toggler" href="#">
+        <span></span>
+    </a>
+
+    <div id="sidebar" class="fixed">
+        <div id="sidebar-shortcuts">
+            <div id="sidebar-shortcuts-large">
+                <button id="btn-monitor" class="btn btn-small btn-monitor" title="Monitor" onclick="menuHandler.toggleMenuButton('monitor');">
+                    <i class="icon-bar-chart icon-large"></i>
+                </button>
+
+                <button id="btn-configure" class="btn btn-small btn-configure" title="Configure" onclick="menuHandler.toggleMenuButton('configure');">
+                    <i class="icon-wrench icon-large"></i>
+                </button>
+
+                <button id="btn-setting" class="btn btn-small btn-setting" title="Setting" onclick="menuHandler.toggleMenuButton('setting');">
+                    <i class="icon-cog icon-large"></i>
+                </button>
+
+                <button id="btn-query" class="btn btn-small btn-query" title="Query" onclick="menuHandler.toggleMenuButton('query');">
+                    <i class="icon-search icon-large"></i>
+                </button>
+            </div>
+
+            <div id="sidebar-shortcuts-mini">
+                <span class="btn btn-monitor"></span>
+
+                <span class="btn btn-configure"></span>
+
+                <span class="btn btn-setting"></span>
+
+                <span class="btn btn-query"></span>
+            </div>
+        </div>  <!--#sidebar-shortcuts-->
+        <ul id="menu" class="nav nav-list"></ul>
+    </div> <!-- #sidebar -->
+
+    <div id="main-content" class="clearfix">
+        <div id="breadcrumbs" class="fixed">
+            <ul id="breadcrumb" class="breadcrumb">
+            </ul> <!--.breadcrumb-->
+
+            <div id="nav-search">
+                <form id="search-form" onsubmit="searchSiteMap();">
+					<span class="input-icon">
+						<input type="text" placeholder="Search Sitemap" class="input-small search-query" id="nav-search-input" autocomplete="off">
+						<i class="icon-search" id="nav-search-icon"></i>
+					</span>
+                </form>
+            </div> <!--#nav-search-->
+        </div>
+        <div id="page-content" class="clearfix">
+            <div id='content-container'></div>
+        </div>
+    </div> <!-- /.main-content -->
+</div> <!-- /.container-fluid #main-container -->
+
+<script type="text/x-kendo-template" id="gridDetailTemplate">
+    <div>
+		<div class="inline row-fluid position-relative pull-right">
+		    <div class="dropdown-toggle pull-right" data-toggle="dropdown">
+		        <i class="icon-cog icon-only bigger-110"></i>
+		    </div>
+		    # var idname = data['name'].replace(/:/g,'-');#
+		    <ul class="dropdown-menu dropdown-icon-only dropdown-light pull-right dropdown-caret dropdown-closer width-110">
+		        <li>
+		            <a onclick="toggleDivs('advancedDetails_#=idname#','basicDetails_#=idname#');">
+		                Basic
+		            </a>
+		        </li>
+		        <li>
+		            <a onclick="toggleDivs('basicDetails_#=idname#','advancedDetails_#=idname#');">
+		                Advanced
+		            </a>
+		        </li>
+		    </ul>
+		</div>
+        <div class="row-fluid basicDetails" id="basicDetails_#=idname#">
+        </div>
+        # var rawdata = ifNull(data['rawData'],data);#
+		# try{if(raw_json != null){ #
+			# rawdata = raw_json;#
+		#}}catch(e){}#
+        <div class="row-fluid advancedDetails" hidden="true" id="advancedDetails_#=idname#">
+        	<div><pre style="background-color:white">#= JSON.stringify(rawdata,null,2)#</pre></div>
+        </div>
+    </div>
+</script>
+<script type="text/x-kendo-template" id="detailTemplate">
+    #for(var i=0;i<data.length;i++) { #
+        <div class="row-fluid">
+            <div class="span2"><label>#=data[i]['lbl']#</label></div>
+            <div class="span10">#= data[i]['value'] #</div>
+        </div>
+    #}#
+</script>
+
+<script type="text/x-kendo-template" id="monitor-menu-template">
+    <li class="head">
+        <a data-link="/tenants/monitor/network\\#p=mon_infra_dashboard">
+            <span> Monitor </span>
+			<span id="sidebar-collapse" class="pull-right" onclick="onClickSidebarCollapse();">
+				<i class="icon-chevron-left"></i>
+			</span>
+        </a>
+    </li>
+    <li class="item">
+        <a href="\\#" class="dropdown-toggle" data-link="/tenants/monitor/network\\#p=mon_infra_dashboard">
+            <i class="icon-desktop"></i>
+            <span>Infrastructure </span>
+        </a>
+        <ul id="mon_infra" class="submenu">
+            <li id="mon_infra_dashboard">
+                <a href="/tenants/monitor/network\\#p=mon_infra_dashboard">
+                     Dashboard
+                </a>
+            </li>
+            <li id="mon_infra_control">
+                <a href="/tenants/monitor/network\\#p=mon_infra_control&q[node]=Control+Nodes">
+                     Control Nodes
+                </a>
+            </li>
+            <li id="mon_infra_compute">
+                <a href="/tenants/monitor/network\\#p=mon_infra_compute&q[node]=vRouters">
+                     Virtual Routers
+                </a>
+            </li>
+            <li id="mon_infra_analytics">
+                <a href="/tenants/monitor/network\\#p=mon_infra_analytics&q[node]=Analytics+Nodes">
+                     Analytics Nodes
+                </a>
+            </li>
+			<li id="mon_infra_config">
+                <a href="/tenants/monitor/network\\#p=mon_infra_config&q[node]=Config+Nodes">
+                     Config Nodes
+                </a>
+            </li>
+        </ul>
+    </li>
+    # if(globalObj['orchModel'] == 'openstack') { #
+    <li class="item">
+        <a href="\\#" class="dropdown-toggle" data-link="/tenants/monitor/network\\#p=mon_net_dashboard&q[fqName]=default-domain">
+            <i class="icon-sitemap"></i>
+            <span>Networking </span>
+        </a>
+        <ul id="mon_net" class="submenu">
+            <li id="mon_net_dashboard">
+                <a href="/tenants/monitor/network\\#p=mon_net_dashboard&q[fqName]=default-domain">
+                     Dashboard
+                </a>
+            </li>
+        </ul>
+        <ul id="mon_net" class="submenu">
+            <li id="mon_net_projects">
+                <a href="/tenants/monitor/network\\#p=mon_net_projects&q[view]=list&q[type]=project&q[source]=uve">
+                     Projects
+                </a>
+            </li>
+        </ul>
+        <ul id="mon_net" class="submenu">
+            <li id="mon_net_networks">
+                <a href="/tenants/monitor/network\\#p=mon_net_networks&q[view]=list&q[type]=network&q[source]=uve">
+                     Networks
+                </a>
+            </li>
+        </ul>
+        <ul id="mon_net" class="submenu">
+            <li id="mon_net_instances">
+                <a href="/tenants/monitor/network\\#p=mon_net_instances&q[view]=list&q[type]=instance&q[source]=uve">
+                     Instances
+                </a>
+            </li>
+        </ul>
+    </li>
+    <li class="item">
+        <a href="\\#" class="dropdown-toggle" data-link="/tenants/monitor/network\\#p=mon_debug_pcapture&q=">
+            <i class="icon-puzzle-piece"></i>
+            <span>Debug</span>
+        </a>
+        <ul id="mon_debug" class="submenu">
+            <li id="mon_debug_pcapture">
+                <a href="/tenants/monitor/network\\#p=mon_debug_pcapture&q=">
+                     Packet Capture
+                </a>
+            </li>
+        </ul>
+    </li>
+    #}#
+</script>
+
+<script type="text/x-kendo-template" id="setting-menu-template">
+    <li class="head">
+        <a data-link="/tenants/monitor/network\\#p=setting_configdb_fqname&q=">
+            <span>Setting</span>
+			<span id="sidebar-collapse" class="pull-right" onclick="onClickSidebarCollapse();">
+				<i class="icon-chevron-left"></i>
+			</span>
+        </a>
+    </li>
+    <li class="item">
+        <a href="\\#" class="dropdown-toggle" data-link="/tenants/monitor/network\\#p=setting_configdb_fqname&q=">
+            <i class="icon-table"></i>
+            <span>Config DB</span>
+        </a>
+        <ul id="setting_configdb" class="submenu">
+            <li id="setting_configdb_fqname">
+                <a href="/tenants/monitor/network\\#p=setting_configdb_fqname&q=">
+                    </i> FQ Name Table
+                </a>
+            </li>
+            <li id="setting_configdb_uuid">
+                <a href="/tenants/monitor/network\\#p=setting_configdb_uuid&q=">
+                    </i> UUID Table
+                </a>
+            </li>
+        </ul>
+    </li>
+</script>
+
+<script type="text/x-kendo-template" id="configure-menu-template">
+    <li class="head">
+        <a data-link="/tenants/monitor/network\\#p=config_infra_bgp&q=">
+            <span> Configure </span>
+			<span id="sidebar-collapse" class="pull-right" onclick="onClickSidebarCollapse();">
+				<i class="icon-chevron-left"></i>
+			</span>
+        </a>
+    </li>
+    <li class="item">
+        <a href="\\#" class="dropdown-toggle" data-link="/tenants/monitor/network\\#p=config_infra_bgp&q=">
+            <i class="icon-desktop"></i>
+            <span>Infrastructure </span>
+        </a>
+        <ul id="config_infra" class="submenu">
+            <li id="config_infra_bgp">
+                <a href="/tenants/monitor/network\\#p=config_infra_bgp&q=">
+                     BGP Peer
+                </a>
+            </li>
+        </ul>
+    </li>
+    # if(globalObj['orchModel'] == 'openstack') { #
+    <li class="item">
+        <a href="\\#" class="dropdown-toggle" data-link="/tenants/monitor/network\\#p=config_net_vn&q=">
+            <i class="icon-sitemap"></i>
+            <span>Networking </span>
+        </a>
+        <ul id="config_net" class="submenu">
+            <li id="config_net_vn">
+                <a href="/tenants/monitor/network\\#p=config_net_vn&q=">
+                     Networks
+                </a>
+            </li>
+            <li id="config_net_policies">
+                <a href="/tenants/monitor/network\\#p=config_net_policies&q=">
+                     Policies
+                </a>
+            </li>
+            <li id="config_net_ipam">
+                <a href="/tenants/monitor/network\\#p=config_net_ipam&q=">
+                     IP Address Management
+                </a>
+            </li>
+            <li id="config_net_fip">
+                <a href="/tenants/monitor/network\\#p=config_net_fip&q=">
+                     Allocate Floating IPs
+                </a>
+            </li>
+
+        </ul>
+    </li>
+    <li class="item">
+        <a href="\\#" class="dropdown-toggle" data-link="/tenants/monitor/network\\#p=config_sc_svctemplate&q=">
+            <i class="icon-link"></i>
+            <span>Services </span>
+        </a>
+        <ul id="config_sc" class="submenu">
+            <li id="config_sc_svctemplate">
+                <a href="/tenants/monitor/network\\#p=config_sc_svctemplate&q=">
+                     Service Templates
+                </a>
+            </li>
+            <li id="config_sc_svcInstances">
+                <a href="/tenants/monitor/network\\#p=config_sc_svcInstances&q=">
+                     Service Instances
+                </a>
+            </li>
+        </ul>
+    </li>
+    <li class="item">
+        <a href="\\#" class="dropdown-toggle" data-link="/tenants/monitor/network\\#p=config_dns_dnsservers&q=">
+            <i class="icon-globe"></i>
+            <span>DNS </span>
+        </a>
+        <ul id="config_dns" class="submenu">
+            <li id="config_dns_dnsservers">
+                <a href="/tenants/monitor/network\\#p=config_dns_dnsservers&q=">
+                     Servers
+                </a>
+            </li>
+	   <li id="config_dns_dnsrecords">
+                <a href="/tenants/monitor/network\\#p=config_dns_dnsrecords&q=">
+                     Records
+                </a>
+           </li>  	
+           <li class="hide"  id="config_dynamic_dnsrecords">
+                <a href="/tenants/monitor/network\\#p=config_dynamic_dnsrecords&q=">
+                     Active DNS Database
+                </a>
+           </li>	 	
+        </ul>
+    </li>
+    #}#
+</script>
+
+<script type="text/x-kendo-template" id="query-menu-template">
+    <li class="head">
+        <a data-link="/tenants/monitor/network\\#p=query_flow_series">
+            <span> Query </span>
+			<span id="sidebar-collapse" class="pull-right" onclick="onClickSidebarCollapse();">
+				<i class="icon-chevron-left"></i>
+			</span>
+        </a>
+    </li>
+    <li class="item">
+        <a href="\\#" class="dropdown-toggle" data-link="/tenants/monitor/network\\#p=query_flow_series">
+            <i class="icon-exchange"></i>
+            <span>Flows</span>
+        </a>
+        <ul id="query_flow" class="submenu">
+            <li id="query_flow_series">
+                <a href="/tenants/monitor/network\\#p=query_flow_series">
+                    </i> Flow Series
+                </a>
+            </li>
+            <li id="query_flow_records">
+                <a href="/tenants/monitor/network\\#p=query_flow_records">
+                    </i> Flow Records
+                </a>
+            </li>
+            <li id="query_flow_queue">
+                <a href="/tenants/monitor/network\\#p=query_flow_queue">
+                    </i> Query Queue
+                </a>
+            </li>
+        </ul>
+    </li>
+    <li class="item">
+        <a href="\\#" class="dropdown-toggle" data-link="/tenants/monitor/network\\#p=query_log_system&q=">
+            <i class="icon-hdd"></i>
+            <span>Logs</span>
+        </a>
+        <ul id="query_log" class="submenu">
+            <li id="query_log_system">
+                <a href="/tenants/monitor/network\\#p=query_log_system&q=">
+                    </i> System Logs
+                </a>
+            </li>
+            <li id="query_log_object">
+                <a href="/tenants/monitor/network\\#p=query_log_object">
+                    </i> Object Logs
+                </a>
+            </li>
+            <li id="query_log_queue">
+                <a href="/tenants/monitor/network\\#p=query_log_queue">
+                    </i> Query Queue
+                </a>
+            </li>
+        </ul>
+    </li>
+</script>
+
+<script type="text/x-kendo-template" id="current-breadcrumb">
+    #for(var i=0;i<data.length;i++) {#
+        #if(i != data.length-1) {#
+            <li>
+                <a href="#= data[i].href#">#= data[i].link #</a>
+                <span class="divider"><i class="icon-angle-right"></i></span>
+            </li>
+        #} else {#
+            <li class="active">
+                <a href="#= data[i].href#">#= data[i].link #</a>
+            </li>
+        #}#
+    #}#
+</script>
+
+<script type="text/x-kendo-template" id="menu-template">
+    <ul>
+        #for(var i=0;i<data.length;i++) {#
+        <li class='#:data[i]['cls']#' name='menu_#=i#'>
+        <span class='#:data[i]['cls']#'>#: data[i]['label'] #</span>
+
+        <div class='menu-popup #:data[i]['cls']#'>
+        #for(var j=0;(data[i]['items'] != null) && (j<data[i]['items'].length);j++) {#
+        <h3 class='#:data[i]['items'][j]['cls']#' name='menu_#=i##=j#'>#: data[i]['items'][j]['label']#</h3>
+        <ul>
+            #for(var k=0;(data[i]['items'][j]['items'] != null) &&
+            (k<data[i]['items'][j]['items'].length);k++) {#
+            <li name='menu_#=i##=j##=k#' class='#:data[i]['items'][j]['items'][k]['cls']#'>
+            #: data[i]['items'][j]['items'][k]['label'] #</li>
+            #}#
+        </ul>
+        #}#
+        </div>
+        </li>
+        #if(i != data.length-1) {#
+        <li>
+            <span>|</span>
+        </li>
+        #}#
+        #}#
+    </ul>
+</script>
+
+<script type="text/x-kendo-template" id="menu-box-template">
+    <ul>
+        #for(var i=0;i<data.length;i++) {#
+        <li name='menu_#=i#'>
+            <span>#: data[i]['label'] #</span>
+            <div class='table menu-popup #:data[i]['cls']#' style="width:auto;">
+            <div class='table-row'>
+                #for(var j=0;(data[i]['items'] != null) && (j<data[i]['items'].length);j++) {#
+                <div class='menu-section'>
+                    <h3 name='menu_#=i##=j#'>#: data[i]['items'][j]['label']#</h3>
+                    <ul>
+                        #for(var k=0;(data[i]['items'][j]['items'] != null) &&
+                        (k<data[i]['items'][j]['items'].length);k++) {#
+                        <li name='menu_#=i##=j##=k#'>#: data[i]['items'][j]['items'][k]['label'] #</li>
+                        #}#
+                    </ul>
+                </div>
+                #}#
+            </div>
+            </div>
+        </li>
+        #if(i != data.length-1) {#
+        <li>
+            <span>|</span>
+        </li>
+        #}#
+        #}#
+    </ul>
+</script>
+
+<script id="delete-confirmation" type="text/x-kendo-template">
+    <div width="300px" height="100px">
+        <p style="display:block" widthclass="delete-message">Do you want to delete the record?</p>
+        <div width="300px" height="45px">
+            <button style="width:100px;margin:5px;left:40px;" class="delete-confirm k-button">OK</button>
+            <a style="width:100px;margin:5px;left:125px;" class="delete-cancel k-button">Cancel</a>
+        </div>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="charts-old-template">
+    <div class='charts-pane height-100'>
+        #var widths = {1:'width-1',2:'width-2',3:'width-3'};#
+        #var heights = {1:'height-1',2:'height-2',3:'height-3'};#
+        #var rowCnt = data['d'].length/data['colCount'];#
+        #for(var i=0;i<data['d'].length;) {#
+        <div class='table #=heights[rowCnt]#'>
+            <div class='table-row #=heights[rowCnt]#'>
+                #for(var j=0;(j<data['colCount']) && (i<data['d'].length);j++) {#
+                <div class='table-cell #=widths[data['colCount']]# demo-section'>
+                <div class="example-title">#= data['d'][i]['title']#</div>
+                #if((j%2 == 1) && (data['colCount'] == 2)) {#
+                <div class="stack-chart negate" id="#=data['id']#_#=i#"></div>
+                #} else {#
+                <div class="stack-chart" id="#=data['id']#_#=i#"></div>
+                #}#
+            </div>
+            #i++;#
+            #}#
+        </div>
+    </div>
+    #}#
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="dashboard-template">
+    <div class="row-fluid">
+        <div class="widget-box transparent" id="dashboard-box">
+            #if(data['noTitle'] == null) {#
+            <div class="widget-header">
+	                <h4 class="smaller">
+	                    # if(data['title'] != null) { #
+	                        #= data['title'] #
+	                    # } else { #
+	                        Information
+	                    # } #
+	                </h4>
+                # if(data['showSettings']){#
+                	# var ip = data['ip'] #
+                <div class="widget-toolbar pull-right">
+                    <a  data-action="collapse">
+                        <i class="icon-chevron-up"></i>
+                    </a>
+                </div>
+                <div class="widget-toolbar pull-right">
+					<a data-toggle="dropdown">
+						<i class="icon-cog"></i>
+					</a>
+					<ul class="pull-right dropdown-menu dropdown-caret dropdown-closer">
+                       <li>
+                           <a onclick="showBasicDetails();">
+                               <i class="icon-list"></i> &nbsp; Basic view
+                           </a>
+                       </li>
+                       <li>
+                           <a onclick="showAdvancedDetails();">
+                               <i class="icon-code"></i> &nbsp; Advanced view
+                           </a>
+                       </li>
+                       #/*<li>
+                           <a onclick="showStatus('#=ip#');">
+                               Status
+                           </a>
+                       </li>*/#
+                   	</ul>
+				</div>	
+				# } #
+                #/*<div class="widget-toolbar pull-right">
+                    <a  data-action="collapse">
+                        <i class="icon-chevron-up"></i>
+                    </a>
+                </div>*/#
+            </div>
+            # } #
+            
+            <div class="widget-body">
+				#/*<div class="row-fluid">
+					<div id="advanced_basic" class="span2 offset10">
+						<div id="linkAdvanced" style="cursor:pointer;text-decoration:underline;color:\\#3182bd" onclick="showAdvancedDetails()">Advanced</div>
+						<div id="linkBasic" hidden="true" style="cursor:pointer;text-decoration:underline;color:\\#3182bd" onclick="showBasicDetails()">Basic</div>
+					</div>
+				</div>*/#
+				<div id="divAdvanced" class="row-fluid hide" >
+				<!--	<div class="row-fluid">
+            			<label class="span3">Advanced</label>
+            		</div>
+				-->
+					<div><pre>#= JSON.stringify(nodeData,null,2)#</pre></div>
+				</div>
+                <div id="divBasic" class="widget-main padding-4" class="row-fluid">
+                    #var totele = data['d'].length;#
+                    #totele = data['d'].length;#
+                        <ul id="detail-columns" class="item-list">
+                            #for(var i=0;i < totele ;i++) {#
+                                <li>
+                                    <label class="inline row-fluid">
+                                        <div class="key span5">#=data['d'][i]['lbl']#</div>
+                                        <div class="value span7"> 
+                                            #if(data['d'][i]['clk'] != null){#
+                                                #=data['d'][i]['value']#
+                                            #}else {#
+                                                 #=ifNull(data['d'][i]['value'],'--')# 
+                                            #}#
+                                        </div>
+                                    </label>
+                                </li>
+                            #}#	<!-- /for i colCount -->
+                        </ul>	
+                    </div><!--/span-->
+                </div><!-- /widget-main -->
+                <div id="divStatus" hidden="true" class="widget-main padding-4" class="row-fluid">
+                	<!--<div class="row-fluid">
+                		<label class="span3">Status</label><i id="icon_divContrailStatus" class="icon-collapse-alt" onclick="toggleDetails('divContrailStatus');"></i> 
+                	</div>-->
+		            <div id="divContrailStatus" class="widget-main padding-4" class="row-fluid"></div>
+		           <!-- <div class="row-fluid">
+		            	<label class="span3">Opentstack Status</label><i id="icon_divOpenStackStatus" class="icon-expand-alt" onclick="toggleDetails('divOpenStackStatus');"></i>
+		            </div>
+		            <div id="divOpenStackStatus" hidden="true" class="widget-main padding-4" class="row-fluid"></div>
+		            -->
+		        </div>    
+            </div><!--/widget-body-->	
+        </div><!--/widget-box-->
+    </div><!--/row-->
+</script>
+
+<script type="text/x-kendo-template" id="charts-template">
+	#var widths = {1:'span12',2:'span6',3:'span4'};#
+	<div class="row-fluid">	
+		#for(var i=0;(i<data['colCount']);i++) {#
+				<div class="#=widths[data['colCount']]# widget-box transparent">
+    				<div class="widget-header">
+						<h4 class="smaller">#= data['d'][i]['title']#</h4>
+						<div class="widget-toolbar pull-right">
+            				<a data-action="collapse">
+            					<i class="icon-chevron-up"></i>
+            				</a>
+        				</div>
+					</div>
+        			<div class="widget-body">
+           				<div class="widget-main" style="height:300px;">
+						#if((i%2 == 1) && (data['colCount'] == 2)) {#
+               				<div class="stack-chart negate" id="#=data['id']#_#=i#"></div>
+                		#} else {#
+                			<div class="stack-chart" id="#=data['id']#_#=i#"></div>
+                		#}#
+					</div>
+				</div>
+			</div>
+			#}#
+			
+			
+	</div>
+                
+</script>
+
+<script type="text/x-kendo-template" id="no-data">
+    <div class='no-data-text'>No Statistics available for this duration</div>
+</script>
+
+<script type="text/x-kendo-template" id="lblval-tooltip-template-old">
+    <div class="table chart-tooltip">
+        #$.each(data,function(idx,obj) {#
+        <div class="table-row">
+            <div class="table-cell lbl">#= obj['lbl'] #</div>
+            <div class="table-cell">&nbsp;:&nbsp;</div>
+            <div class="table-cell value">#= obj['value'] #</div>
+        </div>
+
+        #})#
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="title-lblval-tooltip-template">
+<div class="row-fluid chart-tooltip">
+	<div class="row-fluid chart-tooltip-title">
+		<p>#= data[0]['value'] #</p>
+	</div>
+	# data.shift();#
+    <div class="row-fluid chart-tooltip-body ">
+        #$.each(data,function(idx,obj) {#
+        	<div class="row-fluid chart-tooltip-row">
+            	<span class="key">#= obj['lbl'] #:</span>
+            	<span class="value"> #= obj['value'] #</span>
+        	</div>
+		#})#
+    </div>
+</div>
+</script>
+
+<script type="text/x-kendo-template" id="title-lblval-tooltip-template_new">
+<div class="row-fluid chart-tooltip">
+	<div class="row-fluid chart-tooltip-title">
+		<p>#= data[0]['value'] #</p>
+	</div>
+	# data.shift();#
+    <div class="row-fluid chart-tooltip-body ">
+        #$.each(data,function(idx,obj) {#
+        	<div class="row-fluid chart-tooltip-row">
+                #if(obj['lbl']!=''){#
+            	<span class="key">#= obj['lbl'] #:</span>
+                #}#
+            	<span class="value"> #= obj['value'] #</span>
+        	</div>
+		#})#
+    </div>
+</div>
+</script>
+
+<script type="text/x-kendo-template" id="infobox-template">
+    <div id="#=data['id']#" class="infobox infobox-grey">
+        <div class="infobox-icon">
+            <i class="icon-sitemap"></i>
+        </div>
+        #if(data['totalCntField'] != null) {#
+            <div class="infobox-data">
+                <span class="infobox-data-number" data-bind='text:#= data['totalCntField'] #'>&nbsp;</span>
+            </div>
+            #/*<div class="stat stat-success" data-bind='text:#= data['activeCntField'] #'>&nbsp;</div>*/#
+            <div class="stat stat-important" style="display:none" data-bind='text:#= data['inactiveCntField'] #'>&nbsp;</div>
+        #} else {#
+            <div class="infobox-data">
+                <span class="infobox-data-number">#= data['totalCnt'] #</span>
+            </div>
+            <div class="stat stat-success">#= data['activeCnt'] #</div>
+            <div class="stat stat-important">#= data['inactiveCnt'] #</div>
+        #}#
+        <div class="infobox-content">#=data['title'] #</div>
+    </div>
+</script>
+<script type="text/x-kendo-template" id="sparkline-template">
+    <div id="#=data['id']#" class="infobox infobox-blue infobox-dynamic">
+        <div class="infobox-chart">
+            <span class="sparkline" style="line-height:45px; width:44px;"></span>
+        </div>
+
+        <div class="infobox-data">
+            <span class="infobox-data-number">#= data['totalCnt'] #</span>
+            <div class="infobox-content">#=data['title'] #</div>
+        </div>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="lblval-tooltip-template">
+<div class="row-fluid chart-tooltip">
+	<div class="row-fluid chart-tooltip-body ">
+        #$.each(data,function(idx,obj) {#
+        	<div class="row-fluid chart-tooltip-row">
+            	<span class="key">#= obj['lbl'] #:</span>
+            	<span class="value"> #= obj['value'] #</span>
+        	</div>
+		#})#
+    </div>
+</div>
+</script>
+
+<script type="text/x-kendo-template" id="grid-search-toolbar-template">
+	<div class="widget-header grid-widget-header">
+    	<h4 class="smaller">#= data['widgetGridTitle'] #</h4>
+		# if(data['collapseable'] == true){ #
+        <div class="widget-toolbar pull-right">
+            <a class="widget-toolbar-icon" data-action="collapse">
+                <i class="collapse-icon icon-chevron-up"></i>
+            </a>
+        </div>
+		#}#
+        <div class="widget-toolbar pull-right widget-toolbar-search">
+            <a class="widget-toolbar-icon link-searchbox" #= data['showSearchbox'] == true ? 'style="display:none;" ' : '' # data-action="search">
+                <i class="icon-search"></i>
+            </a>
+			<span class="input-searchbox #= data['showSearchbox'] == false ? 'hide' : '' #">
+				<span class="input-icon">
+        			<input type="text" placeholder="#= data['searchPlaceholder']#" class="input-medium input-grid-search" id="#= data['searchTextSelectorId'] #">
+					<i class="widget-toolbar-icon icon-search" data-action="search"></i>
+				</span>
+			</span>
+        </div>
+		# if(data['widgetGridActions'] != undefined){
+			$.each(data['widgetGridActions'], function(key, val){#
+			<div class="widget-toolbar pull-right">
+				#= val #
+			</div>
+			#});
+		}#
+	</div>
+</script>
+
+<script type="text/x-kendo-template" id="timeoutTemplate">
+    <div>Timeout in fetching the details</div>
+</script>
+
+<!--JQuery Scripts-->
+<script src="/assets/jquery/js/jquery-1.8.3.min.js"></script>
+
+<!--
+<script src="/assets/jquery/assets/js/jquery-1.9.1.min.js"></script>
+-->
+<script src="/assets/jquery/js/jquery.xml2json.js"></script>
+<script src="/assets/jquery/js/jquery.ba-bbq.min.js"></script>
+<script src="/assets/jquery/js/jquery.timer.js"></script>
+<script src="/assets/jquery/js/jquery-ui-1.10.3.custom.min.js"></script>
+<script src="/assets/jquery/js/jquery.ui.touch-punch.min.js"></script>
+
+<!--Bootstrap Scripts-->
+<script src="/assets/bootstrap/js/bootstrap.min.js"></script>
+
+<!--Kendo Scripts-->
+<script src="/assets/kendoui/js/kendo.all.min.js"></script>
+<script src="/js/multiselect.js"></script>
+
+<!--D3 Scripts-->
+<script src="/assets/d3/js/d3.js"></script>
+<script src="/assets/nvd3/js/nv.d3.js"></script>
+<script src="/assets/crossfilter/js/crossfilter.min.js"></script>
+
+<!--Utils Scripts-->
+<script src="/js/jsonpath-0.8.0.js"></script>
+<script src="/js/xdate.js"></script>
+
+<!--Contrail Scripts-->
+<script src="/js/kendo-utils.js"></script>
+<script src="/js/bootstrap-utils.js"></script>
+<script src="/js/cytoscape_api.js"></script>
+<script src="/js/web-utils.js"></script>
+<script src="/js/contrail-layout.js"></script>
+<script src="/js/config_global.js"></script>
+<script src="/js/protocol.js"></script>
+<script src="/js/qe-utils.js"></script>
+<script src="/js/d3-utils.js"></script>
+
+<!-- ToolTip js
+<script src="/js/qtip.js"></script>
+
+Cytoscape JS for topology
+<script src="/js/cytoscape.min.js" ></script>-->
+
+<!--[if lte IE 8]>
+<script src="/js/"></script>
+<![endif]-->
+</body>
+</html>

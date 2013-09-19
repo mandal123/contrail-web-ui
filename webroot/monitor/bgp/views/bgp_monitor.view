@@ -1,0 +1,1265 @@
+<!--
+ Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
+-->
+
+<script type='text/x-kendo-template' id='bgp-monitor-template'>
+  <div class='contrail'>
+      <div id='page-container' class='splitter-pane-content no-padding'></div>
+      <div id="splitter" style="display:none">
+        <div class='splitter-pane tree-pane'>
+            <div class='splitter-pane-content'>
+              #/*<a class='k-button' onclick='javascript:refreshTree()' style='float:right;'>
+                <span class='k-icon k-i-refresh'></span>
+              </a>*/#
+              <div id='tree-loading' style='clear:both;display:none;'></div>
+	            #/*<ul class="xbreadcrumbs" id="breadcrumbs-1">
+                    <li>
+                       <a href="javascript:layoutHandler.setURLHashParams({},{merge:false})" class="">Dashboard</a>
+                    </li>
+                    <li class='current'>
+                       <a>Overview</a>
+                       <ul>
+                           <li><a href="">Control Nodes</a></li>
+                           <li><a href="">vRouters</a></li>
+                           <li><a href="">About Us</a></li>
+                           <li><a href="">Advertise With Us</a></li>
+                           <li><a href="">Contact Us</a></li>
+                       </ul>
+                    </li>
+                </ul>*/#
+              <div class="treeview-back" style='clear:both;padding-top:5px;display:none;'>
+                <div id="treeInfraNode" class="kendo-treeview project-autoflow"></div>
+              </div>
+            </div>
+        </div>
+        <div class='splitter-pane'>
+        </div>
+      </div>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="controlnodes-template">
+    <div class="row-fluid">
+        <div class="row-fluid">
+            <div class="span12">
+                <div class="widget-box transparent" id="recent-box">
+                    <div class="widget-header" id='controlNodes-header'></div>
+                    <div class="widget-body">
+                        <div class="widget-main padding-4">
+
+                            <div class="row-fluid">
+                                <div class="span12">
+                                    <div id="controlNodes-bubble" style="margin:-10px 0 0 0;height:290px;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                     </div>
+                </div>
+
+                <div class="row-fluid">
+                    <div id="gridControlNodes" class="k-grid-contrail"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="infoList-template">
+    <ul class="item-list">
+        #for(var i=0;i<data.length;i++) {#
+            <li>
+                <label class="inline">
+                    <span class="key"> #= data[i]['lbl'] #</span>
+                    <span class="value">#= data[i]['value']#</span>
+                </label>
+            </li>
+        #}#
+    </ul>
+</script>
+<script type="text/x-kendo-template" id="logList-template">
+    <ul class="item-list">
+        #for(var i=0;i<Math.min(data.length,3);i++) {#
+            <div class="itemdiv commentdiv infobox-blue">
+                <div class="body">
+                    <div class="name">
+                        <a style="cursor:default">#= data[i]['moduleId'] #</a>
+                    </div>
+                    <div class="time">
+                        <i class="icon-time" style="cursor:default"></i>
+                        <span class="green">#= data[i]['timeStr'] #</span>
+                    </div>
+
+                    <div class="text">#= data[i]['message'] #</div>
+                </div>
+            </div>
+        #}#
+        #if(data.length == 0) { #
+            <p>No Logs found.</p>
+        #}#
+    </ul>
+</script>
+
+<script type="text/x-kendo-template" id="alerts-template">
+    <ul class="item-list">
+    #if(!data.popup){#
+        #for(var i=0;i<Math.min(data.length,5);i++) {#
+            <div class="itemdiv commentdiv infobox-blue">
+                <div class="body">
+                  #if(data[i]['type']!='nodeAlerts'){#              
+                    <div class="time">
+                        <i class="icon-time"></i>
+                        <span>#= data[i]['diff'] #</span>
+                    </div>
+                    #if(data[i]['type']=='fatal'){#
+                    <div class="text"> #=data[i]['nName']# #= data[i]['pName'] # down</div>
+                    #}#
+                    #if(data[i]['type']=='stopped'){#
+                    <div class="text"> #=data[i]['nName']# #= data[i]['pName'] # stopped</div>
+                    #}#
+                  #}#
+                  #if(data[i]['type']=='nodeAlerts'){#
+                    <div class="text"> #=data[i]['nName']# #= data[i]['pName']# #=data[i]['msg']#</div>
+                  #}#  
+                </div>
+            </div>
+        #}#
+        #if(data.length == 0) { #
+            <p>No Alerts found.</p>
+        #}else{#
+          <div onclick="showMoreAlerts();" style="cursor:pointer;"><a>More</a></div>
+          #}#
+     #}else{#
+           #for(var i=0;i<data.length;i++) {#
+            <div class="itemdiv commentdiv infobox-blue">
+                <div class="body">
+                    <div class="text">#=data[i]['timeStamp']# #=data[i]['nName']# #= data[i]['pName'] # Down</div>
+                </div>
+            </div>
+        #}#
+      #}#
+    </ul>
+</script>
+<div id="moreAlerts" class="modal modal-840 hide">
+	  <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="icon-remove"></i></button>
+        <h6 class="modal-header-title">Alerts</h6>
+     </div>
+     <div class="modal-body">
+	   <div id="alertContent" class="k-grid-contrail">
+	 </div>
+	  <div class="modal-footer">
+	     <button id="alertsClose" class="btn btn-primary btn-mini" data-dismiss="modal" aria-hidden="true">Close</button>
+	  </div> 
+	 </div>
+</div>
+<script type="text/x-kendo-template" id="infra-dashboard">
+    <div class="row-fluid">
+        <div class="row-fluid">
+            <div id='topStats' class="span12 infobox-container"></div>
+        </div>
+		<hr class="hr-8"/>
+        <div id="dashboard-charts" class="row-fluid">
+           	<div class="dashboard-chart-item" style="float:left; width:100%;">
+				<div style="margin-left: 160px;">
+					<div id="vrouter-bubble" style="margin:-30px 0 0 0;width:100%;height:290px"></div>
+				</div>
+			</div>
+			<div style="float: left;width: 160px;margin-left: -100%;">
+				<div id="sparkLineStats" class="infobox-container"></div>
+				#/*<div id="verSlider" class="span1 vSlider" style="width:40px">
+                <input/>
+                <input/>
+                </div>*/#
+			</div>
+                        
+            <div class="row-fluid dashboard-chart-item hide">
+                <div class="span12">
+                    <div id="ctrlNode-bubble" style="margin:-30px 0 0 0;height:290px;">
+                    </div>
+                </div>
+            </div>
+          
+	        <div class="row-fluid dashboard-chart-item hide">
+            	<div class="span12">
+                	<div id="analyticNode-bubble" style="margin:-30px 0 0 0;height:290px;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row-fluid dashboard-chart-item hide">
+                <div class="span12">
+                    <div id="configNode-bubble" style="margin:-30px 0 0 0;height:290px;">
+                    </div>
+                </div>
+			</div>
+        </div>  #/* End- dashboard-charts */#
+        
+		<hr />
+
+		<div id="dashboard-stats" class="row-fluid">
+            <div class="span4">
+                <div class="widget-box transparent" id="logs-box">
+                    <div class="widget-header"></div>
+                    <div class="widget-body">
+                        <div class="widget-main padding-4">
+                        	<p class="text-center"><i class="icon-spinner icon-spin blue bigger-125"></i></p>
+						</div>
+                    </div>
+                </div>
+            </div>
+            <div class="span4">
+                <div class="widget-box transparent" id="sysinfo-box">
+                    <div class="widget-header"></div>
+                    <div class="widget-body">
+                        <div id="system-info-stat" class="widget-main">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="span4">
+                <div class="widget-box transparent" id="alerts-box">
+                    <div class="widget-header"></div>
+                    <div class="widget-body">
+						<div id="alerts-box-content" class="widget-main padding-4">
+                        	
+						</div>
+					</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+<div id="objLogWindow" class="modal modal-980 hide" tabindex="-1">
+	<div class="modal-header">
+	  <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="icon-remove"></i></button>
+	  <h6 class="modal-header-title">Object Log</h6>
+	</div>
+	<div class="modal-body">
+	  <div>
+	  <!--  <form class="form-horizontal">
+	          <div class="control-group">
+	              <label class="control-label">Network Name</label>
+	              <div class="controls">
+	                  <div class="row-fluid">
+	                      <input type="text" id="txtVNName" placeholder="Network Name" class="span5" />
+	                  </div>
+	              </div>
+	          </div>
+	      </form>
+	    -->
+	    <div id="ot-container">
+			<div id='ot-query'></div>
+			<div id='ot-results' class="k-grid-contrail"></div>
+			<div id="ot-select-window"></div>
+		</div>
+	  </div>
+	</div>
+	<div class="modal-footer">
+	  <button id="btnObjLogWindowCancel" class="btn btn-primary btn-mini" data-dismiss="modal" aria-hidden="true">Close</button>
+	</div>
+</div>
+
+<div id="loginWindow" class="modal modal-420 hide" tabindex="-1">
+	<div class="modal-header">
+	  <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="icon-remove"></i></button>
+	  <h6 class="modal-header-title">Login</h6>
+	</div>
+	<div class="modal-body">
+	  <div class="login-container">
+	  	<div class="content">
+		    <form class="login-fields">
+		    	<p>Please enter SSH login credentials :</p>
+		    	  <div id="divLoginError" class="text-error"></div>
+		    	  <div class="row-fluid">
+			          <div class="input-prepend span12">
+				          	<span class="add-on">
+				          		<i class="icon-user"></i>
+				          	</span>
+				            <input type="text" id="txtLoginUserName" placeholder="User Name" class="login" />
+			           </div>
+			      </div>
+			      <div class="row-fluid">
+			          <div class="input-prepend span12">
+				        	<span class="add-on">
+				        		<i class="icon-key"></i>
+				        	</span>
+				        	 <input type="password" id="txtLoginPassword" placeholder="Password" class="login" />
+			          </div>
+			      </div>
+		      </form>
+		  </div>
+	  </div>
+	</div>
+	<div class="modal-footer">
+	  <button id="btnLoginWindowCancel" class="btn btn-primary btn-mini" data-dismiss="modal" aria-hidden="true">Cancel</button>
+	  <button id="btnLoginWindowLogin" class="btn btn-primary btn-mini" data-dismiss="modal" aria-hidden="true">Login</button>
+	</div>
+</div>
+<script type="text/x-kendo-template" id="ot-export-toolbar-template">
+	<div class="toolbar">
+		<input name="export" type="button" value="Export" class='k-button'
+		       style="float:right;display:inline-block;width:60px;margin:5px"
+		       onclick="exportJSON2CSV('ot');"/>
+	</div>
+</script>
+
+<script type="text/x-kendo-template" id="peer-template">
+    <div class="contrail">
+        <div class="example-title">Details of Peer (#= data['name']#)</div>
+        <div id='peer-dashboard' style=""></div>
+    </div>
+	<div id="objLogWindow" class="dNone">
+			<div id="ot-container">
+				<div id='ot-query'></div>
+				<div id='ot-results' class="k-grid-contrail"></div>
+				<div id="ot-select-window"></div>
+			</div>
+	</div>
+</script>
+
+<script type="text/x-kendo-template" id="old-console-tab-template">
+    <div>
+        <div id='formConsoleMessages' class='input-form'>
+            <div>
+            	<div>
+                <label for='msgTimeRange' class='center'>Time Range</label>
+                </div>
+                <div>
+                <label id="msgFromTime" for='console-from-time' class='center'>From Time</label>
+                </div>
+                <div>
+                <label id="msgToTime" for='console-to-time' class='center'>To Time</label>
+                </div>
+            </div>
+            <div class='pull-down-10'>
+            	<div>
+                	<select id='msgTimeRange'></select>
+                	</div>
+                    <div id="consoleFromTimeDiv">
+		                <input id="console-from-time" name="fromTime" class="span12"
+		                       value="" required="required"
+		                       validationMessage="From Time Required"/>
+		                <span class="help-inline k-invalid-msg" data-for="fromTime"></span>
+	                </div>
+	                <div id="consoleToTimeDiv">
+		                <input id="console-to-time" name="toTime" class="span12"
+		                       value="" required="required"
+		                       validationMessage="From Time Required"/>
+		                <span class="help-inline k-invalid-msg" data-for="fromTime"></span>
+                 </div>
+            </div>
+            <div>
+	            <label for='msgCategory' class='center'>Log Category</label>
+	            <label for='msgType' class='center'>Log Type</label>
+	            <label class='center'>Log Level</label>
+	        </div>
+	        <div class='pull-down-10'>
+	            <select id='msgCategory'></select>
+	            <select id='msgType'></select>
+	            <select id='msgLevel'></select>
+	        </div>
+            <div class='pull-down-10'>
+                <div class='input-elem'> 
+                    <span class="k-textbox k-space-left">
+                        <input type="text" placeholder="Search"/>
+                        <a class="k-icon k-i-search">&nbsp;</a>
+                    </span>
+                </div>
+                #/*<input class='k-textbox' id='txtLimit'></input>*/#
+                <select id='msgLimit'></select>
+                <div class='input-elem'>
+                    <input type='checkbox' class='checkbox' id='msgAutoRefresh'></input>
+                    <label for='msgAutoRefresh'>Auto Refresh</label>
+                </div>
+                <button id='btnDisplayLogs' class='k-button'>Display Logs</button>
+                <button id='btnResetLogs' class='k-button'>Reset</button>
+            </div>
+        </div>
+        <div id='gridConsole' class="k-grid-contrail"></div>
+    </div>
+</script>
+<script type="text/x-kendo-template" id="console-tab-template">
+	<div class='row-fluid'>
+		<div class="widget-box transparent" id="console-msgs-box">
+			<div class="widget-header">
+				<h4 class="smaller">
+					Console Logs
+				</h4>
+				<div class="widget-toolbar">
+					<a  data-action="collapse">
+						<i class="icon-chevron-up"></i>
+					</a>
+				</div>
+			</div>
+			<div class="widget-body">
+				<div class="widget-main padding-4">
+			    	<div id='formConsoleMessages' class='row-fluid'>
+				        <div class='row-fluid margin-0-0-10'>
+				        	<div class='span2'>
+				            	<label for='msgTimeRange'>Time Range</label>
+				            	<div>
+				            		<select id='msgTimeRange' class="span12"></select>
+				            	</div>
+				            </div>
+				            <div class='span4'>
+				            	<label id="msgFromTime" for='console-from-time'>From Time</label>
+				            	<div id="consoleFromTimeDiv" >
+					                <input id="console-from-time" name="fromTime" class="span12"
+					                       value="" required="required"
+					                       validationMessage="From Time Required"/>
+					                <span class="help-inline k-invalid-msg" data-for="fromTime"></span>
+					            </div>
+				            </div>
+				            <div class='span4'>
+				            	<label id="msgToTime" for='console-to-time'>To Time</label>
+				            	<div id="consoleToTimeDiv">
+					                <input id="console-to-time" name="toTime" class="span12"
+					                       value="" required="required"
+					                       validationMessage="From Time Required"/>
+					                <span class="help-inline k-invalid-msg" data-for="fromTime"></span>
+					            </div>
+				            </div>
+						</div>
+						<div class='row-fluid margin-0-0-10'>
+				        	<div class='span2'>
+				            	<label for='msgCategory'>Log Category</label>
+				            	<div>
+				        			<select id='msgCategory' class="span12" ></select>
+				        		</div>
+						<!--		<div class="input-elem">
+				        			<span class="k-textbox k-space-left">
+				                    	<input type="text" placeholder="Search" class="span10"/>
+				                    	<a class="k-icon k-i-search">&nbsp;</a>
+				                	</span>
+				        		</div> -->
+				            </div>
+				            
+				            <div class='span2'>
+				            	<label for='msgType' >Log Type</label>
+				            	<div>
+					            	<select id='msgType' class="span12"></select>
+					            </div>
+							</div>
+				            <div class='span2'>
+				            	<label>Log Level</label>
+				            	<div>
+					            	<select id='msgLevel' class="span12"></select>
+					            </div>
+				            </div>
+							<div class='span2'>
+				            	<label for='msgType' >Limit</label>
+				            	<div >
+									<select id='msgLimit' class="span12"></select>
+								</div>
+				            </div>
+							<div class='span2'>
+				            	<label>Auto Refresh</label>
+				            	<div>
+				            		<input type='checkbox' class='ace-input' id='msgAutoRefresh' /><span for='msgAutoRefresh' class='ace-lbl'>&nbsp;</span >
+					            </div>
+				            </div>
+				        </div>
+				        <div class='row-fluid margin-0-0-10'>
+				            <button id='btnDisplayLogs' class='btn btn-mini btn-primary '>Display Logs</button>
+				            <button id='btnResetLogs' class='btn btn-mini '>Reset</button>
+				        </div>
+				    </div><!--/formConsoleMessages -->
+			    </div><!-- /widget-main -->
+        		</div><!--/widget-body -->
+        	</div><!--/widget-box-->
+		</div><!--/box-->
+	    <div id='gridConsole' class="k-grid-contrail"></div>
+	</div><!--/row -->
+</script>
+
+<script type="text/x-kendo-template" id="controlnode-template">
+    <div class="contrail">
+        #/*<div class="example-title">Details of Control Node (#= data['name']#)</div>*/#
+        <div id="control_tabstrip">
+            <ul>
+                <li class="k-state-active">Details</li>
+                <li>Console</li>
+                <li>Peers</li>
+                <li>Routes</li>
+            </ul>
+            <div class="row-fluid">
+                <div id='controlnode-dashboard' class='span5'></div>
+                #/*<div class='example-title'>CPU/Memory Statistics for Control Node (#= data['name'] #)</div>*/#
+                #/*<div class='example-title'>CPU/Memory Statistics</div>
+                <div class='sub-title'>Last 2 hrs</div>*/#
+              #/*  <table>
+                	<tr>
+						<td><div id='control-chart' class='infra-chart'></div></td>
+						<td><div id='control-chart2' class='infra-chart'></div></td>
+						<td><div id='control-chart3' class='infra-chart'></div></td>
+					</tr>
+				</table>
+			TODO uncomment to add the 3 charts
+			*/#
+				<div id='control-detail-charts' class="span7">
+	                <div class="row-fluid">
+                        <div class="widget-box transparent" id="control-sparklines-box">
+                            <div class="widget-header">
+                                <h4 class="smaller">
+                                    <i id="control-sparklines-loading" class="icon-spinner icon-spin blue bigger-125"></i>
+                                    CPU and Memory Utilization
+                                </h4>
+                                <div class="widget-toolbar pull-right">
+                                    <a  data-action="collapse">
+                                        <i class="icon-chevron-up"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="widget-body">
+                                <div class="widget-main padding-4">
+                                    <div class="row-fluid">
+                                        <div id="control-sparklines" class="span4 control-chart-link sparklines-box">
+                                            <p class="sparkline-title">Control Node</p>
+                                            <span class="span3"><small>CPU</small></span> <span id="cpu_share_sparkline" style="height:15px;" class="span8 pull-right"></span>
+                                            <span class="span3"><small>Memory</small></span> <span id="virt_mem_sparkline" style="height:15px;" class="span8 pull-right"></span>
+                                        </div>
+                                    </div>
+                                </div><!-- /widget-main -->
+                            </div><!--/widget-body -->
+                        </div><!--/widget-box-->
+		            	<div class="widget-box transparent" id="control-chart-box">
+		            		<div class="widget-header">
+		            			<h4 class="smaller">
+                                    <i id="control-chart-loading" class="icon-spinner icon-spin blue bigger-125"></i>
+                                    Control Node CPU/Memory Utilization
+		            			</h4>
+		            			<div class="widget-toolbar">
+		            				<a  data-action="collapse">
+		            					<i class="icon-chevron-up"></i>
+		            				</a>
+		            			</div>
+		            		</div>
+		            		<div class="widget-body">
+		            			<div class="widget-main padding-4">
+		            				<div id='control-chart' class='row-fluid'></div>
+	            				</div><!-- /widget-main -->
+    	            		</div><!--/widget-body -->
+    	            	</div><!--/widget-box-->
+    	            	<div class="footer-links">
+							<a id="linkIntrospect" class="pull-right">Introspect</a>
+							<a id="linkStatus" class="pull-right">Status</a>
+						</div>
+    	            </div><!--/row-->
+				</div><!--/vrouter-detail-charts-->
+            </div>
+            <div>
+                <div id='ctrlNodeMessagesTab'></div>
+            </div>
+            <div>
+                <div id='gridPeers' class="k-grid-contrail"></div>
+            </div>
+            <div>
+                <div id='contCtrlRoutes' class='row-fluid'>
+                    <div class='row-fluid'>
+                        <div class='row-fluid'>
+                            <div id='formRoutes' class='row-fluid'>
+                                <div class='row-fluid margin-0-0-10'>
+									<div class='span6'>
+										<label for='comboRoutingInstance'>Routing Instance</label>
+										<div>
+			                                <select class='span12' data-role='combobox' data-bind='source:routingInstances, value:routingInstanceValue' id='comboRoutingInstance'></select>
+										</div>
+									</div>
+									<div class='span4'>
+										<label for='comboRoutingTable'>Address Family</label>
+		                                <div>
+										    <select class='span6' data-role='dropdownlist' data-bind='source:routeTables, value:routeTableValue' id='comboRoutingTable'></select>
+											<select class='span6' data-role='dropdownlist' data-value-field='value' data-text-field='text' data-bind='source:routeLimits, value:limit' id='comboRouteLimit'></select>
+		                                </div>
+                                    </div>
+                                 </div>
+                                 <div class='row-fluid margin-0-0-10'>
+                                    #/*<label for='txtLimit' class='small'>Limit</label>
+                                    <input type='text' data-bind='value:limit' id='txtLimit' class='small k-textbox'/>*/#
+                                    <div class='span2'>
+                                		<label for='comboPeerSource'>Peer Source</label>
+										<div>
+		                                    <select class='span12' data-role='combobox' data-bind='source:peerSources, value:peerSourceValue' id='comboPeerSource'></select>
+		                                </div>
+                                    </div>
+                                    <div class='span2'>
+                                    	<label for='txtPrefixSearch'>Prefix</label>
+		                                <div>
+										    <input class='span12' data-role='autocomplete' data-bind='value:prefix' id='txtPrefixSearch'></input>
+		                                </div>
+	                                </div>
+	                                <div class='span2'>
+	                                	<label for='txtPrefixSearch'>Protocol</label>
+		                                <div>
+		                                	<select class='span12' data-role='dropdownlist' id='comboProtocol'>
+		                                	  <option value="All">All</option>
+		                                	  <option value="XMPP">XMPP</option>
+		                                	  <option value="BGP">BGP</option>
+		                                	  <option value="ServiceChain">ServiceChain</option>
+		                                	  <option value="Static">Static</option>
+		                                	</select>
+		                                </div>
+		                            </div>
+                                </div>
+                                <div class='row-fluid margin-0-0-10'>
+                                	
+	                                <div class='span3'>
+	                                    <button id='btnDisplayRoutes' class='btn btn-mini btn-primary'>Display Routes</button>
+	                                    <button id='btnRouteReset' class='btn btn-mini'>Reset</button>
+	                                </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class='row-fluid'>
+                        #/*<div class='table-cell'>*/#
+                            <div id='gridRoutes' class="k-grid-contrail"></div>
+                        #/*</div>*/#
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="computenodes-template">
+    <div class="row-fluid">
+        <div class="row-fluid">
+            <div class="span12">
+                <div class="widget-box transparent" id="recent-box">
+                    <div class="widget-header" id='vrouter-header'></div>
+                    <div class="widget-body">
+                        <div class="widget-main padding-4">
+                            <div class="row-fluid">
+                                <div class="span12">
+                                    <div id="vrouter-bubble" style="margin:-10px 0 0 0;height:290px;">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row-fluid">
+                                <div class="span12 charts" style="box-sizing: border-box; padding-left: 60px;">
+                                    <div id="vn-chart" class="chart span4 margin-0-0-10">
+                                        <div class="title">vRouters over Virtual Networks</div>
+                                    </div>
+                                    <div id="inst-chart" class="span4 margin-0-0-10 chart">
+                                        <div class="title">vRouters over Instances</div>
+                                    </div>
+                                    <div id="intf-chart" class="chart span4 margin-0-0-10">
+                                        <div class="title text-center">vRouters over Interfaces</div>
+                                    </div>
+                                </div>
+                                <div class="hr hr16 hr-dotted"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row-fluid">
+                    <div id="divcomputesgrid" class="k-grid-contrail"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    #/*<div id='contComputeNodes' class="contrail table responsive">
+        <div class='table-row'>
+            <div class="main example-title table-cell">vRouters Summary</div>
+        </div>
+        <div class='table-row'>
+            <div id='vrouter-bubble' class='height-300 display-inline'></div>
+        </div>
+        <div id="filter-charts">
+          <div id="vn-chart" class="chart">
+            <div class="title">VN</div>
+          </div>
+          <div id="inst-chart" class="chart">
+            <div class="title">Instances</div>
+          </div>
+          <div id="intf-chart" class="chart">
+            <div class="title">Interfaces</div>
+          </div>
+        </div>
+        <div class='table-row'>
+            <div id="divcomputesgrid" class="k-grid-contrail"></div>
+        </div>
+    </div>*/#
+</script>
+
+<script type="text/x-kendo-template" id="computenode-template">
+    <div class='contrail' >
+        #/*<div class="example-title">Details of vRouter (#= data['name']#)</div>*/#
+        <div id="compute_tabstrip">
+            <ul>
+                <li class="k-state-active">Details</li>
+                <li>Console</li>
+                <li>Interfaces</li>
+                <li>Networks</li>
+                <li>ACL</li>
+                <li>Flows</li>
+                <li>Routes</li>
+            </ul>
+            <div class="row-fluid">
+                <div id='computenode-dashboard' class='span5'></div>
+                
+                #/*<div class='example-title'>CPU/Memory Statistics for vRouter (#= data['name'] #)</div>*/#
+                #/*<div class='example-title'>CPU/Memory Statistics</div>
+                <div class='sub-title'>Last 2 hrs</div>*/#
+                <div id='vrouter-detail-charts' class="span7">
+                    <div class="row-fluid">
+                        <div class="widget-box transparent" id="vrouter-sparklines-box">
+                            <div class="widget-header">
+                                <h4 class="smaller">
+                                    <i id="vrouter-sparklines-loading" class="icon-spinner icon-spin blue bigger-125"></i>
+                                    CPU and Memory Utilization
+                                </h4>
+                                <div class="widget-toolbar pull-right">
+                                    <a  data-action="collapse">
+                                        <i class="icon-chevron-up"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="widget-body">
+                                <div class="widget-main padding-4">
+                                    <div class="row-fluid">
+                                        <div id="vrouter-sparklines" class="span4 vrouter-chart-link sparklines-box">
+                                            <p class="sparkline-title">vRouter</p>
+                                            <span class="span3"><small>CPU</small></span> <span id="cpu_share_sparkline" style="height:15px;" class="span8 pull-right"></span>
+                                            <span class="span3"><small>Memory</small></span> <span id="virt_mem_sparkline" style="height:15px;" class="span8 pull-right"></span>
+                                        </div>
+                                        <div id="system-sparklines" class="span4 system-chart-link sparklines-box">
+                                            <p class="sparkline-title">System</p>
+                                            <span class="span3"><small>CPU</small></span> <span id="one_min_avg_cpuload_sparkline" style="height:15px;" class="span8 pull-right"></span>
+                                            <span class="span3"><small>Memory</small></span> <span id="used_sys_mem_sparkline" style="height:15px;" class="span8 pull-right"></span>
+                                        </div>
+                                    </div>
+                                </div><!-- /widget-main -->
+                            </div><!--/widget-body -->
+                        </div><!--/widget-box-->
+                        <div class="widget-box transparent" id="vrouter-chart-box">
+	            		<div class="widget-header">
+	            		
+	            			<h4 class="smaller">
+                                <i id="vrouter-chart-loading" class="icon-spinner icon-spin blue bigger-125"></i>
+                                vRouter CPU/Memory Utilization
+	            			</h4>
+                            <div class="widget-toolbar pull-right">
+                                <a  data-action="collapse">
+                                    <i class="icon-chevron-up"></i>
+                                </a>
+                            </div>
+	            		</div>
+	            		<div class="widget-body">
+	            			<div class="widget-main padding-4">
+	            				<div id='vrouter-chart' class='row-fluid'>
+	            				</div>
+	            			</div><!-- /widget-main -->
+	            		</div><!--/widget-body -->
+	            	</div><!--/widget-box-->
+	            	<div class="widget-box transparent hide" id="system-chart-box">
+	            		<div class="widget-header">
+	            			<h4 class="smaller">
+                                <i id="system-chart-loading" class="icon-spinner icon-spin blue bigger-125"></i>
+                                System CPU/Memory Utilization
+	            			</h4>
+	            			<div class="widget-toolbar">
+	            				<a  data-action="collapse">
+	            					<i class="icon-chevron-up"></i>
+	            				</a>
+	            			</div>
+	            		</div>
+	            		<div class="widget-body">
+	            			<div class="widget-main padding-4">
+	            				<div id='system-chart' class='row-fluid'></div>
+	        				</div><!-- /widget-main -->
+	            		</div><!--/widget-body -->
+	            	</div><!--/widget-box-->
+	            	<div class="footer-links">
+						<a id="linkIntrospect" class="pull-right">Introspect</a>
+						<a id="linkStatus" class="pull-right">Status</a>
+					</div>
+					#/*<td><div id='bandwidth-chart' class='infra-chart'></div></td> TODO uncomment to add bandwidth chart when backend code is ready*/#
+					</div>
+				</div>
+            </div>
+            <div>
+                <div id='computeNodeMessagesTab'></div>
+            </div>
+            <div>
+                <div id="contInterfaces" class='height-100'>
+                    <div id='gridComputeInterfaces' class="k-grid-contrail"></div>
+                </div>
+            </div>
+            <div>
+                <div id="contVN" class='height-100'>
+                    <div class='contrail k-grid-contrail' id='gridComputeVN'></div>
+                </div>
+            </div>
+            <div>
+                <div id="contACL" class='height-100'>
+                #/* <div class='row-fluid'>
+		                	<label for='aclComboBox' class='margin-5-0 span2'>ACL UUID</label>
+		                	<select class='span6' id='aclComboBox' data-role='combobox' data-bind='source:aclList, value:aclListValue'></select>
+		            	</div>*/#
+                    <div class='contrail k-grid-contrail' id='gridComputeACL'></div>
+                </div>
+            </div>
+            <div>
+                <div id='contFlows' class='height-100'>
+                    
+                    <div class='row-fluid'>
+	                    <div class='span10'>
+		                    <div class='row-fluid'>
+		                    	<label for='aclDropDown' class='margin-5-0 span2'>ACL UUID</label>
+		                    	<div class='span6' id='aclDropDown'></div>
+	                    	</div>
+	                    	 #/*&nbsp;&nbsp;Active Flows:&nbsp;<span id='flowCnt'></span>*/#
+	                    </div>
+                    	<div class='pull-right'>
+	                    	<button id='btnPrevFlows' class='btn btn-primary btn-mini'><< Prev</button>
+	                    	<button id='btnNextFlows' class='btn btn-primary btn-mini'>Next >></button>
+                    	</div>
+                    </div>
+                    <div class='contrail k-grid-contrail' id='gridComputeFlows'></div>
+                </div>
+            </div>
+            <div>
+                <div id='contvRouterRoutes' class='row-fluid'>
+                    <div id='formRoutes' class='row-fluid margin-0-0-10'>
+						<div class="span4">
+	                        <label for='comboVRF' class='small'>VRF</label>
+    		                <div>    
+								<select id='comboVRF' class='span12'></select>
+							</div>
+						</div>
+						<div class="span4">
+                        	<label for='comboVRF'>Show Routes</label>
+							<div>
+		                        <input type='radio' name='routeType' id='rdboxUnicast' checked='checked' class="ace-input" /><span class="ace-lbl">Unicast</span>
+                        		<input type='radio' name='routeType' id='rdboxMulticast' class="ace-input" class="ace-input" /><span class="ace-lbl">Multicast</span>
+                    		</div>
+						</div>
+					</div>
+                    <div id='gridvRouterUnicastRoutes' class="k-grid-contrail"></div>
+                    <div id='gridvRouterMulticastRoutes' class="k-grid-contrail"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="analyticsnodes-template">
+    #/*<div id='contAnalyticsNodes' class="contrail table responsive">
+        <div class='table-row'>
+            <div class="main example-title table-cell">Analytics Nodes Summary</div>
+        </div>
+        <div class='table-row'>
+            <div id="analytics-nodes-grid" class="k-grid-contrail"></div>
+        </div>
+    </div>*/#
+    <div class="row-fluid">
+        <div class="row-fluid">
+            <div class="span12">
+                <div class="widget-box transparent" id="recent-box">
+                    <div class="widget-header" id='analyticNodes-header'></div>
+                    <div class="widget-body">
+                        <div class="widget-main padding-4">
+
+                            <div class="row-fluid">
+                                <div class="span12">
+                                    <div id="analyticNodes-bubble" style="margin:-10px 0 0 0;height:290px;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row-fluid">
+                    <div id="analytics-nodes-grid" class="k-grid-contrail"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="confignodes-template">
+    <div class="row-fluid">
+        <div class="row-fluid">
+            <div class="span12">
+                <div class="widget-box transparent" id="recent-box">
+                    <div class="widget-header" id='configNodes-header'></div>
+                    <div class="widget-body">
+                        <div class="widget-main padding-4">
+
+                            <div class="row-fluid">
+                                <div class="span12">
+                                    <div id="configNodes-bubble" style="margin:-10px 0 0 0;height:290px;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row-fluid">
+                    <div id="config-nodes-grid" class="k-grid-contrail"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    #/*<div id='contConfigNodes' class="contrail table responsive">
+        <div class='table-row'>
+            <div class="main example-title table-cell">Config Nodes Summary</div>
+        </div>
+        <div class='table-row'>
+            <div id="config-nodes-grid" class="k-grid-contrail"></div>
+        </div>
+    </div>*/#
+</script>
+
+<script type="text/x-kendo-template" id="analyticsnode-template">
+    <div class="contrail">
+        #/*<div class="example-title">Details of Analytics Node (#= data['name']#)</div>*/#
+        <div id="analytics_tabstrip">
+            <ul>
+                <li class="k-state-active">Details</li>
+                <li>Console</li>
+                <li>Generators</li>
+               <li>QE Queries</li>
+            </ul>
+            <div class="row-fluid">
+                <div id='analyticsnode-dashboard' class='span5''></div>
+                #/*<div class='example-title'>CPU/Memory Statistics for Control Node (#= data['name'] #)</div>*/#
+                #/*<div class='example-title'>CPU/Memory Statistics</div>
+                <div class='sub-title'>Last 2 hrs</div>*/#
+                <div id='analytics-detail-charts' class="span7">
+	                <div class="row-fluid">
+                        <div class="widget-box transparent" id="analytics-sparklines-box">
+                            <div class="widget-header">
+                                <h4 class="smaller">
+                                    <i id="analytics-sparklines-loading" class="icon-spinner icon-spin blue bigger-125"></i>
+                                    CPU and Memory Utilization
+                                </h4>
+                                <div class="widget-toolbar pull-right">
+                                    <a  data-action="collapse">
+                                        <i class="icon-chevron-up"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="widget-body">
+                                <div class="widget-main padding-4">
+                                    <div class="row-fluid">
+                                        <div id="collector-sparklines" class="span4 collector-chart-link sparklines-box">
+                                            <p class="sparkline-title">Collector</p>
+                                            <span class="span3"><small>CPU</small></span> <span id="collector_cpu_share_sparkline" style="height:15px;" class="span8 pull-right"></span>
+                                            <span class="span3"><small>Memory</small></span> <span id="collector_mem_virt_sparkline" style="height:15px;" class="span8 pull-right"></span>
+                                        </div>
+                                        <div id="queryengine-sparklines" class="span4 queryengine-chart-link sparklines-box">
+                                            <p class="sparkline-title">Query Engine</p>
+                                            <span class="span3"><small>CPU</small></span> <span id="queryengine_cpu_share_sparkline" style="height:15px;" class="span8 pull-right"></span>
+                                            <span class="span3"><small>Memory</small></span> <span id="queryengine_mem_virt_sparkline" style="height:15px;" class="span8 pull-right"></span>
+                                        </div>
+                                        <div id="opServer-sparklines" class="span4 opServer-chart-link sparklines-box">
+                                            <p class="sparkline-title">OpServer</p>
+                                            <span class="span3"><small>CPU</small></span> <span id="opserver_cpu_share_sparkline" style="height:15px;" class="span8 pull-right"></span>
+                                            <span class="span3"><small>Memory</small></span> <span id="opserver_mem_virt_sparkline" style="height:15px;" class="span8 pull-right"></span>
+                                        </div>
+                                    </div>
+                                </div><!-- /widget-main -->
+                            </div><!--/widget-body -->
+                        </div><!--/widget-box-->
+		            	<div class="widget-box transparent" id="collector-chart-box">
+		            		<div class="widget-header">
+		            			<h4 class="smaller">
+                                    <i id="collector-chart-loading" class="icon-spinner icon-spin blue bigger-125"></i>
+                                    Collector CPU/Memory Utilization
+		            			</h4>
+		            			<div class="widget-toolbar">
+		            				<a  data-action="collapse">
+		            					<i class="icon-chevron-up"></i>
+		            				</a>
+		            			</div>
+		            		</div>
+		            		<div class="widget-body">
+		            			<div class="widget-main padding-4">
+		            				<div id='collector-chart' class='row-fluid'></div>
+	            				</div><!-- /widget-main -->
+		            		</div><!--/widget-body -->
+		            	</div><!--/widget-box-->
+		            <div class="widget-box transparent hide" id="queryengine-chart-box">
+	            		<div class="widget-header">
+	            			<h4 class="smaller">
+                                <i id="queryengine-chart-loading" class="icon-spinner icon-spin blue bigger-125"></i>
+                                Query Engine CPU/Memory Utilization
+	            			</h4>
+	            			<div class="widget-toolbar">
+	            				<a  data-action="collapse">
+	            					<i class="icon-chevron-up"></i>
+	            				</a>
+	            			</div>
+	            		</div>
+	            		<div class="widget-body">
+	            			<div class="widget-main padding-4">
+	            				<div id='queryengine-chart' class='row-fluid'></div>
+            				</div><!-- /widget-main -->
+	            		</div><!--/widget-body -->
+	            	</div><!--/widget-box-->
+	            	<div class="widget-box transparent hide" id="opServer-chart-box">
+	            		<div class="widget-header">
+	            			<h4 class="smaller">
+                                <i id="opServer-chart-loading" class="icon-spinner icon-spin blue bigger-125"></i>
+                                Opserver CPU/Memory Utilization
+	            			</h4>
+	            			<div class="widget-toolbar">
+	            				<a  data-action="collapse">
+	            					<i class="icon-chevron-up"></i>
+	            				</a>
+	            			</div>
+	            		</div>
+	            		<div class="widget-body">
+	            			<div class="widget-main padding-4">
+	            				<div id='opServer-chart' class='row-fluid'></div>
+	        				</div><!-- /widget-main -->
+	            		</div><!--/widget-body -->
+	            	</div><!--/widget-box-->
+	            	<div class="footer-links">
+						<a id="linkIntrospect" class="pull-right">Introspect</a>
+						<a id="linkStatus" class="pull-right">Status</a>
+					</div>
+		            </div><!--/row-->
+	            </div>
+            </div>
+            <div>
+                <div id='analyticsNodeMessagesTab'></div>
+            </div>
+            <div>
+                <div id='gridGenerators' class="k-grid-contrail"></div>
+            </div>
+            <div>
+            	<div id='gridQEQueries' class="k-grid-contrail"></div>
+            </div>
+            
+            <div>
+                <div id='contCtrlRoutes' class='table responsive'>
+                    <div class='table-row'>
+                        <div class='table-cell'>
+                            <div id='formRoutes' class='input-form'>
+                                <div>
+                                    <label for='comboRoutingInstance'>Routing Instance</label>
+                                    <select data-role='combobox' data-bind='source:routingInstances, value:routingInstanceValue' id='comboRoutingInstance'></select>
+                                    <label for='comboRoutingTable'>Routing Table</label>
+                                    <select data-role='dropdownlist' data-bind='source:routeTables, value:routeTableValue' id='comboRoutingTable'></select>
+                                    #/*<label for='txtLimit' class='small'>Limit</label>
+                                    <input type='text' data-bind='value:limit' id='txtLimit' class='small k-textbox'/>*/#
+                                    <select data-role='dropdownlist' data-value-field='value' data-text-field='text' data-bind='source:routeLimits, value:limit' id='comboRouteLimit'></select>
+                                </div>
+                                <div class='pull-down-10'>
+                                    <label for='comboPeerSource'>Peer Source</label>
+                                    <select data-role='combobox' data-bind='source:peerSources, value:peerSourceValue' id='comboPeerSource'></select>
+                                    <label for='txtPrefixSearch'>Prefix</label>
+                                    <input data-role='autocomplete' data-bind='value:prefix' id='txtPrefixSearch'></input>
+                                    <button id='btnDisplayRoutes' class='k-button'>Display Routes</button>
+                                    <button id='btnRouteReset' class='k-button'>Reset</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class='table-row'>
+                        #/*<div class='table-cell'>*/#
+                            <div id='gridRoutes' class="k-grid-contrail"></div>
+                        #/*</div>*/#
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+<script type="text/x-kendo-template" id="widget-header-template">
+        <h4 class="smaller">
+            <span>#= data['title'] #</span>
+        </h4>
+
+        <div class="widget-toolbar pull-right">
+            <a data-action="collapse">
+                <i class="icon-chevron-up"></i>
+            </a>
+        </div>
+        #/*<div class="widget-toolbar pull-right">
+            <a data-toggle="dropdown">
+                <i class="icon-cog"></i>
+            </a>
+            <ul class="pull-right dropdown-menu dropdown-caret dropdown-closer">
+                <li><a href="\\#"><i class="icon-reorder"></i> &nbsp; Show All</a></li>
+            </ul>
+        </div>
+        <div class="widget-toolbar pull-right">
+            <a href="\\#">
+                <i class="icon-repeat"></i>
+            </a>
+        </div>*/#
+</script>
+<script type="text/x-kendo-template" id="confignode-template">
+    <div class="contrail">
+        #/*<div class="example-title">Details of Config Node (#= data['name']#)</div>*/#
+        <div id="config_tabstrip">
+            <ul>
+                <li class="k-state-active">Details</li>
+                <li>Console</li>
+            </ul>
+            <div class="row-fluid">
+                <div id='confignode-dashboard' class='span5'></div>
+                #/*<div class='example-title'>CPU/Memory Statistics for Control Node (#= data['name'] #)</div>*/#
+                #/*<div class='example-title'>CPU/Memory Statistics</div>
+                <div class='sub-title'>Last 2 hrs</div>*/#
+                <div id='config-detail-charts' class="span7">
+                    <div class="widget-box transparent" id="config-sparklines-box">
+                        <div class="widget-header">
+                            <h4 class="smaller">
+                                <i id="config-sparklines-loading" class="icon-spinner icon-spin blue bigger-125"></i>
+                                CPU and Memory Utilization
+                            </h4>
+                            <div class="widget-toolbar pull-right">
+                                <a  data-action="collapse">
+                                    <i class="icon-chevron-up"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="widget-body">
+                            <div class="widget-main padding-4">
+                                <div class="row-fluid">
+                                    <div id="apiServer-sparklines" class="span4 apiServer-chart-link sparklines-box">
+                                        <p class="sparkline-title">ApiServer</p>
+										<span class="span3"><small>CPU</small></span> <span id="api_server_cpu_share_sparkline" style="height:15px;" class="span8 pull-right"></span>
+                                        <span class="span3"><small>Memory</small></span> <span id="api_server_mem_virt_sparkline" style="height:15px;" class="span8 pull-right"></span>
+                                    </div>
+                                    <div id="serviceMonitor-sparklines" class="span4 serviceMonitor-chart-link sparklines-box">
+                                        <p class="sparkline-title">Service Monitor</p>
+                                        <span class="span3"><small>CPU</small></span> <span id="service_monitor_cpu_share_sparkline" style="height:15px;" class="span8 pull-right"></span>
+                                        <span class="span3"><small>Memory</small></span> <span id="service_monitor_mem_virt_sparkline" style="height:15px;" class="span8 pull-right"></span>
+                                    </div>
+                                    <div id="schema-sparklines" class="span4 schema-chart-link sparklines-box">
+                                        <p class="sparkline-title">Schema Transformer</p>
+                                        <span class="span3"><small>CPU</small></span> <span id="schema_xmer_cpu_share_sparkline" style="height:15px;" class="span8 pull-right"></span>
+                                        <span class="span3"><small>Memory</small></span> <span id="schema_xmer_mem_virt_sparkline" style="height:15px;" class="span8 pull-right"></span>
+                                    </div>
+                                </div>
+                            </div><!-- /widget-main -->
+                        </div><!--/widget-body -->
+                    </div><!--/widget-box-->
+	                <div class="row-fluid">
+		            	<div class="widget-box transparent" id="apiServer-chart-box">
+		            		<div class="widget-header">
+		            			<h4 class="smaller">
+                                    <i id="apiServer-chart-loading" class="icon-spinner icon-spin blue bigger-125"></i>
+		            				ApiServer CPU/Memory Utilization
+		            			</h4>
+		            			<div class="widget-toolbar">
+		            				<a  data-action="collapse">
+		            					<i class="icon-chevron-up"></i>
+		            				</a>
+		            			</div>
+		            		</div>
+		            		<div class="widget-body">
+		            			<div class="widget-main padding-4">
+		            				<div id='apiServer-chart' class='row-fluid'></div>
+	            				</div><!-- /widget-main -->
+		            		</div><!--/widget-body -->
+		            	</div><!--/widget-box-->
+		            	<div class="widget-box transparent hide" id="serviceMonitor-chart-box">
+	            		<div class="widget-header">
+	            			<h4 class="smaller">
+                                <i id="serviceMonitor-chart-loading" class="icon-spinner icon-spin blue bigger-125"></i>
+	            				ServiceMonitor CPU/Memory Utilization
+	            			</h4>
+	            			<div class="widget-toolbar">
+	            				<a  data-action="collapse">
+	            					<i class="icon-chevron-up"></i>
+	            				</a>
+	            			</div>
+	            		</div>
+	            		<div class="widget-body">
+	            			<div class="widget-main padding-4">
+	            				<div id='serviceMonitor-chart' class='row-fluid'></div>
+            				</div><!-- /widget-main -->
+	            		</div><!--/widget-body -->
+	            	</div><!--/widget-box-->
+	            	<div class="widget-box transparent hide" id="schema-chart-box">
+            		<div class="widget-header">
+            			<h4 class="smaller">
+                            <i id="schema-chart-loading" class="icon-spinner icon-spin blue bigger-125"></i>
+            				Schema CPU/Memory Utilization
+            			</h4>
+            			<div class="widget-toolbar">
+            				<a  data-action="collapse">
+            					<i class="icon-chevron-up"></i>
+            				</a>
+            			</div>
+            		</div>
+            		<div class="widget-body">
+            			<div class="widget-main padding-4">
+            				<div id='schema-chart' class='row-fluid'></div>
+        				</div><!-- /widget-main -->
+            		</div><!--/widget-body -->
+            	</div><!--/widget-box-->
+            	<div class="footer-links">
+					<a id="linkIntrospect" class="pull-right">Introspect</a>
+					<a id="linkStatus" class="pull-right">Status</a>
+				</div>
+		            </div><!--/row-->
+				</div><!--/config-detail-charts-->
+            </div>
+            <div>
+                <div id='configNodeMessagesTab'></div>
+            </div>
+            <div>
+                <div id='contCtrlRoutes' class='table responsive'>
+                    <div class='table-row'>
+                        <div class='table-cell'>
+                            <div id='formRoutes' class='input-form'>
+                                <div>
+                                    <label for='comboRoutingInstance'>Routing Instance</label>
+                                    <select data-role='combobox' data-bind='source:routingInstances, value:routingInstanceValue' id='comboRoutingInstance'></select>
+                                    <label for='comboRoutingTable'>Routing Table</label>
+                                    <select data-role='dropdownlist' data-bind='source:routeTables, value:routeTableValue' id='comboRoutingTable'></select>
+                                    #/*<label for='txtLimit' class='small'>Limit</label>
+                                    <input type='text' data-bind='value:limit' id='txtLimit' class='small k-textbox'/>*/#
+                                    <select data-role='dropdownlist' data-value-field='value' data-text-field='text' data-bind='source:routeLimits, value:limit' id='comboRouteLimit'></select>
+                                </div>
+                                <div class='pull-down-10'>
+                                    <label for='comboPeerSource'>Peer Source</label>
+                                    <select data-role='combobox' data-bind='source:peerSources, value:peerSourceValue' id='comboPeerSource'></select>
+                                    <label for='txtPrefixSearch'>Prefix</label>
+                                    <input data-role='autocomplete' data-bind='value:prefix' id='txtPrefixSearch'></input>
+                                    <button id='btnDisplayRoutes' class='k-button'>Display Routes</button>
+                                    <button id='btnRouteReset' class='k-button'>Reset</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class='table-row'>
+                        #/*<div class='table-cell'>*/#
+                            <div id='gridRoutes' class="k-grid-contrail"></div>
+                        #/*</div>*/#
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+<script type="text/x-kendo-template" id="gridsTemplateJSONDump">
+	<div>
+		# var rawdata = data;#
+		# try{if(raw_json != null){ #
+			# rawdata = raw_json;#
+		#}}catch(e){}#
+	    <div class="row-fluid">
+	        <div class="row-fluid">
+	            <div class="span2"><label>Details :</label></div>
+	        </div>
+	        <div class="row-fluid">
+		        <div ><pre>#= JSON.stringify(rawdata,null,2)#</pre></div>
+		    </div>
+	    </div>
+	</div>
+</script>

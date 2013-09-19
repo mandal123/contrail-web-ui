@@ -1,0 +1,488 @@
+/*
+ * Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
+ */
+ 
+/* Bootstrap Customized CSS */
+.scrolled {
+	top:0;
+	-webkit-box-shadow: 0 2px 4px 0 rgba(0,0,0,.15);
+	box-shadow: 0 2px 4px 0 rgba(0,0,0,.15);
+}
+/* Sidebar*/
+
+#sidebar li.head > a > i{
+	display:none;
+}
+#sidebar.menu-min li.head i{
+	display: inline-block;
+}
+.menu-min .nav-list > li > a > span#sidebar-collapse {
+	display:block;
+	position: absolute;
+	left: 10px;
+	top: 2px;
+	width: 10px;
+	height: 50px;
+	line-height: 38px;
+	background: transparent;
+	z-index: 120;
+	box-shadow: none;
+	border: none;
+	padding-left: 2px;
+}
+.menu-min #sidebar-collapse > [class*="icon-"] {
+	font-size: 22px;
+}
+.menu-min .nav-list > li.item:hover > a > span {
+	display: block;
+}
+#sidebar-collapse {
+	position: absolute;
+	right: -2px;
+	margin: 1px 0;
+}
+.navbar .brand{padding: 10px;}
+.brand img{display:inline-block;}
+.brand img.logo{ margin-left:-5px;}
+
+.infobox > .stat{
+	font-size:11px;
+}
+.infobox > .stat-success {
+	right:5px;
+}
+.infobox > .stat-important {
+	bottom:5px;
+}
+.infobox > .stat-success:after {
+	top:-5px;
+}
+.infobox > .stat-important:after {
+	bottom:-5px;
+}
+.infobox-grey{
+	color: #565656;
+}
+.infobox > .infobox-content{
+	margin: 0 0 0 5px;
+}
+/* .nav-list li.head a span{
+	font-size:18px;
+	margin:0 0 0 5px;
+} */
+
+/* Kendo UI Customized CSS */
+/* Grid Custom CSS */
+.k-grid-header .k-header{
+	padding:5px 8px;
+}
+.k-grid-header table .k-link, .k-grid-header table th, .k-grid-header tr th .k-link, .k-grid-header tr th{
+	color: #3182bd !important;
+	background-color: #f9f9f9;
+}
+.k-grid-header table .k-link:hover{
+	text-decoration: none;
+}
+.k-detail-row{
+	font-size:12px;
+	background-color:#fff;
+}
+.k-detail-row label{
+	font-size: 12px;
+	margin-bottom: 0;
+}
+.k-detail-row  .row-fluid, .k-detail-row .row-fluid [class*="span"]{
+	min-height: 20px;
+}
+/* .k-grid table tr:last-child td{
+	border-bottom:1px solid #dedede;
+} */
+td[role="gridcell"] .btn-primary, td[role="gridcell"] .btn-primary:hover{
+	background-color: #fff;
+	border-color:#fff;
+	color: #898989;
+}
+.k-grid>table>tbody .k-group-cell+td, .k-grid>.k-grid-content .k-group-cell+td, .k-grid .k-hierarchy-cell+td {
+	border-left-width: 1px;
+}
+.k-detail-row > td{
+	border-style: solid;
+	border-color: #dedede;
+	border-width:1px 0;
+}
+.mastertooltip {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cell-hyperlink {
+  color: #3182bd;
+  cursor: pointer;
+}
+.cell-hyperlink-text-error{
+  color: #b94a48;
+  cursor: pointer;
+}
+/* k-grid-contrail */
+
+.k-grid-contrail{
+	border-color: #dedede;
+	border-style: solid;
+	border-width: 1px 0;	
+}
+.k-grid-contrail .k-grid-header{
+    padding-right: 0 !important;
+    border-style: none;
+}
+.k-grid-contrail .k-grid-header .k-header{
+	border-style: solid;
+	border-width: 0 0 1px 0;
+}
+.k-grid-contrail .k-grid-header table .k-link, .k-grid-contrail .k-grid-header table th, .k-grid-contrail .k-grid-header tr th .k-link, .k-grid-contrail .k-grid-header tr th{
+	background-color: #fff;
+}
+.k-grid-contrail.k-grid td {
+	border-style: none;
+	border-width: 0px;
+	padding: 5px 8px;
+	height: 20px;
+}
+.k-grid-contrail .k-detail-row td  {
+	border-color: #dedede;
+	border-style: solid;
+	border-width: 1px 0;	
+}
+.k-grid-contrail .k-grid-header-wrap, .k-grid-contrail .k-pager-wrap, .k-pager-wrap>.k-link {
+	border-style: none;
+	border-width: 0px;
+}
+.k-grid-contrail .k-grid-toolbar, .k-grid-contrail .k-grouping-header+.k-grid-toolbar {
+	margin-top: -1px;
+	padding: 0;
+	height: 32px;
+}
+.k-grid-contrail .k-pager-wrap>.k-link {
+	float: left;
+	margin: 0 1px;
+	padding: 0 3px;
+	height: 22px;
+	line-height: 22px;
+	-moz-border-radius: 0;
+	-webkit-border-radius: 0;
+	-o-border-radius: 0;
+	border-radius: 0;
+	cursor: pointer;
+}
+.k-grid-contrail .k-pager-wrap {
+	border-color: #dedede;
+	border-style: solid;
+	border-width: 1px 0 0;
+	/* margin-top: -1px; */
+}
+.k-grid-contrail .k-pager-numbers .k-link, .k-pager-numbers .k-state-selected {
+	padding: 0 8px;
+	-moz-border-radius: 0;
+	-webkit-border-radius: 0;
+	-o-border-radius: 0;
+	border-radius: 0;
+}
+.k-grid-contrail .k-pager-sizes .k-dropdown .k-input{
+	padding: 1px 0;
+	font-size: 12px;
+	height: 18px;
+}
+.k-grid-contrail .k-pager-sizes .k-dropdown .k-select{
+	line-height: 16px;
+	min-height: 16px;
+}
+.k-grid-contrail .k-pager-sizes {
+	float: right;
+	border-left: 1px solid #dedede;
+	padding:1px 2px 0 10px;
+}
+.k-grid-contrail.k-grid .k-grid-content{
+    overflow: auto;
+}
+.k-grid-contrail.k-grid tr td {
+ 	word-wrap: break-word;
+  	overflow:visible; 
+}
+.k-grid-contrail.k-grid tr[role="row"]{
+	background-color: #f5f5f5;
+}
+.k-grid-contrail.k-grid tr[role="row"].k-alt{
+	background-color: #fff;
+}
+.k-grid-contrail .k-loading-image {
+	background-image: none;
+}
+.k-grid-contrail .input-grid-search {
+	height: 17px !important;
+	margin-bottom: 4px;
+	border-color: #ddd;
+}
+.k-grid-contrail .icon-search {
+	margin-top: 1px;
+	font-size: 14px;
+}
+.k-grid-contrail.collapsed{
+	border-bottom: 0;
+}
+.k-grid-contrail.collapsed .k-grid-header, .k-grid-contrail.collapsed .k-grid-content, .k-grid-contrail.collapsed .k-pager-wrap, .k-grid-contrail.collapsed table[role="grid"] {
+	display: none;
+}
+/* Tabstrip */
+.k-tabstrip{
+	border:none;
+}
+.k-tabstrip .k-content, .k-panelbar .k-tabstrip .k-content {
+	padding: 1.3em .92em;
+	box-sizing: border-box;
+  	-moz-box-sizing: border-box;
+}
+.k-tabstrip .k-tabstrip-items {
+	padding: 0;
+	margin: -10px -10px 0;
+	background-color: #f9f9f9;
+	border-bottom: 1px solid #eee;
+	padding: 4px 0 3px;
+}
+.k-tabstrip .k-content, .k-panelbar .k-tabstrip .k-content {
+	margin: 0;
+}
+.k-tabstrip-items .k-state-active, .k-tabstrip-items .k-state-active:hover{
+	color: #576373;
+	border: none;
+	background-color: #f9f9f9;
+	z-index: 12;
+	padding: 0;
+	margin: 0;
+}
+
+.k-tabstrip-items .k-state-default {
+	border: none;
+	background-color: #f9f9f9;
+}
+.k-tabstrip-items .k-link {
+	background-color: #f9f9f9;
+}
+
+/* .k-state-active, .k-state-active:hover, .k-active-filter {
+	border-color: #ccc;
+} */
+.k-tabstrip-items .k-link, .k-panelbar .k-tabstrip-items .k-link {
+	padding:4px 12px;
+}
+.k-tabstrip-items .k-link:hover{
+	text-decoration:none;
+	color:#3182bd;
+}
+/* .k-tabstrip-items .k-link{
+	background-color: #f9f9f9;
+} */
+.k-tabstrip-items .k-state-active .k-link{
+	background-color: #f9f9f9;
+	color: #3182bd;
+}
+/* .k-tabstrip-items .k-item:hover{
+	border-color: #dadada;
+} */
+.k-tabstrip .k-content, .k-panelbar .k-tabstrip .k-content {
+ 	border-width: 0;
+	border-top: 1px solid #fff; 
+	padding: 12px 10px;
+}
+.k-state-selected, .k-state-selected:link, .k-state-selected:visited, .k-list > .k-state-selected, .k-list > .k-state-highlight, .k-panel > .k-state-selected, .k-button:active, .k-ghost-splitbar-vertical, .k-ghost-splitbar-horizontal, .k-draghandle.k-state-selected:hover {
+    color: #fff;
+    background-color: #599ac9 !important;
+    border-color: #599ac9 !important;
+}
+.k-state-selected.transparent, .k-state-selected:link.transparent, .k-state-selected:visited.transparent{
+    color: #393939;
+    background-color: transparent !important;
+    border: none;
+}
+
+/* k-loading */
+.k-loading.custom{
+	height:20px;
+	text-align:center;
+	margin-top: 50px;
+}
+/* k-validation */
+.k-widget.k-tooltip-validation {
+	padding: 5px 2px;
+	border: none;
+	color: #e6550d;
+	-webkit-box-shadow: none;
+	box-shadow: none;
+}
+
+/* k-Dropdown */
+.k-dropdown > .k-dropdown-wrap{
+	padding:0;
+}
+.k-dropdown .k-state-focused .k-input {
+  color: #fff;
+}
+.k-dropdown .k-input {
+	padding-right: 20px;
+} 
+/* k-multiselect */
+.k-multiselect.k-header {
+	min-height: 28px;
+}
+.k-multiselect > .k-multiselect-wrap{
+	padding: 1px 0;
+	min-height: 24px;
+}
+.k-multiselect .k-multiselect-wrap li {
+	margin: 0.5px 0 0.5px 2px;
+	padding: 1.25px 2px 1.25px 5px;
+	border-color: #ccc; 
+}
+
+/* Bootstrap Modal */
+.modal-280{
+	width:280px;
+	margin-left: -140px;
+}
+.modal-420{
+	width:420px;
+	margin-left: -210px;
+}
+.modal-700{
+	width:700px;
+	margin-left: -350px;
+}
+.modal-840{
+	width:840px;
+	margin-left: -420px;
+}
+.modal-980{
+	width:980px;
+	margin-left: -490px;
+}
+.modal-1120{
+	width:1120px;
+	margin-left: -560px;
+}
+.modal--500 .modal-body{ 
+	max-height: 500px;
+	min-height: 500px;
+}
+.modal{
+	color:#393939;
+}
+.modal-backdrop, .modal-backdrop.fade.in {
+opacity: .4;
+filter: alpha(opacity=40);
+}
+.modal-header {
+	padding: 1px 15px;
+}
+.modal-header h6{
+	font-size: 15px;
+	color:#393939;
+}
+.modal-header i{
+	font-size: 16px;
+}
+.modal-header .close {
+	font-size:29px;
+	margin-top:6px;
+}
+.modal-footer {
+	padding: 8px 15px;
+	background-color: #fff;
+}
+
+/* Kendo General */
+/* .k-state-selected, .k-state-selected:link, .k-state-selected:visited, .k-list > .k-state-selected, .k-list > .k-state-highlight, .k-panel > .k-state-selected, .k-button:active, .k-ghost-splitbar-vertical, .k-ghost-splitbar-horizontal, .k-draghandle.k-state-selected:hover {
+	color: #fff;
+	background-color: #7196b1;
+	border-color: #7196b1;
+} */
+
+/* NVD3 Styles */
+
+/* aligning heights of all input types */
+.row-fluid input[class*="span"], .row-fluid select[class*="span"], .row-fluid .k-dropdown[class*="span"]{
+	min-height: 26px;
+}
+
+/* Chart Classes */
+.stack-chart {
+	zoom: 1;
+  	width: 100%;
+  	height: 300px;
+  	vertical-align: top;
+  	margin: 0 auto;
+}
+
+.k-selection .k-leftHandle div {         
+    margin: -20px 0 0 -15px;
+    padding: 40px 30px 0 0; 
+}                           
+.k-selection .k-rightHandle div {        
+    margin: -20px 0 0 -15px;
+    padding: 40px 0 0 30px; 
+}     
+
+/* Topology */
+.topology{
+	margin:auto;	
+}
+.topology_breadthfirst{
+	height:inherit;
+	width:auto;	
+	font-size:10px;
+}
+
+.topology_grid{
+	height:inherit;
+	width:auto;	
+	font-size:12px;
+}
+
+/* policy rules */
+.rule-item, .rule-item-header {
+	min-height:20px; 
+	padding: 8px 8px 1px; 
+}
+.rule-item:nth-child(even), .rule-item-header {background: #f9f9f9;}
+
+/* Port Map Styles */
+rect.bordered {
+    stroke: #E6E6E6;
+    stroke-width:1px;   
+}
+.portMapChart {
+    height:100px;
+    width:100%;
+}
+
+/* Query Pages */
+.where-pane-container{
+	height: 498px;
+}
+
+/* Dashboard Sparkline */
+#sparkLineStats{
+	width:135px;
+}
+
+/* Sparkline boxes on details page*/
+
+.sparklines-box{
+	border: 1px solid #dedede;
+	padding: 5px;
+	cursor: pointer;
+}
+.sparklines-box p.sparkline-title{
+	padding: 0 5px 2px;
+	color: #3182bd;
+	margin-bottom: 0;
+}
+.sparklines-box [class*="span"]{
+	min-height: 18px;
+}

@@ -1,0 +1,309 @@
+<!--
+ Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
+-->
+
+<script type='text/x-kendo-template' id='monitor-template'>
+    <div id="splitter" style="" class="contrail tenant-mon-backup">
+        <div class='splitter-pane tree-pane'>
+            <div class='splitter-pane-content'>
+                <a id='k-tree-refresh-btn' class='k-button' onclick='javascript:refreshTree()' style='margin-right:10px;float:right;'>
+                    <span class='k-icon k-i-refresh'></span>
+                </a>
+                <div id='tree-loading' style='clear:both;'></div>
+                <div class="treeview-back" style='clear:both;'>
+                    <div id="treeview-images" class="project-autoflow"></div>
+                </div>
+            </div>
+        </div>
+        <div class='splitter-pane'> 
+            <div id='main-container' class='splitter-pane-content'></div>
+        </div>
+    </div>
+</script>
+
+<script type='text/x-kendo-template' id='provision-template'>
+    <h1> Infra Admin </h1>
+</script>
+
+<script type='text/x-kendo-template' id='chart-type-template'>
+    <section class='toggle-section'>
+        <h3> Chart Type: </h3>
+        <ul class="toggle-options">
+            <li class="active" >Bar</li>
+            <li> | </li> 
+            <li>Column</li> 
+        </ul>
+    </section>
+</script>
+<script type='text/x-kendo-template' id='interval-type-template'>
+    <section id='toggle-chartInterval' class='toggle-section'>
+        <h3> Interval: </h3>
+        <ul class="toggle-options">
+            <li><a>10m</a></li>
+            <li class='active'><a>1h</a></li> 
+            #/*<li><a>24h</a></li> */#
+        </ul>
+    </section>
+</script>
+
+<script type='text/x-kendo-template' id='network-template'>
+    <div id="network-tabs" class="filtering-tabs">
+        <ul> 
+            <li>Details</li> 
+            <li>Connected Networks</li> 
+        </ul>
+        <div id="network-details">
+            <div id="network-overview" class="tab-pane">
+                <div class='example-title'>Traffic Statistics for Virtual Network #= name #</div>
+                <div id="chart-top">
+                    #/* Toolbar providing the chart options */#
+                    <div id='network-ts-toolbar' class='chart-toolbar'>
+                        <div id='network-ts-interval' class='toolbar-elem'></div>
+                        #/*<label class='toolbar-elem'><input type='checkbox' id='chkbox-refresh'></input> Auto Refresh</label>*/#
+                    </div>
+                    #/*<div id='timeseries-interval-tabs' class='filtering-tabs'></div>
+                    <div class='chart-types' id='ts-chart-types'>
+                        <span class='line-icon chart-type selected'>L</span>
+                        <span class='area-icon chart-type'>A</span>
+                    </div>*/#
+                    <div class='chart-legend'>
+                        <div class='legend-item'>
+                            <div class='in legend-icon'></div>Total In
+                        </div>
+                        <div class='legend-item'>
+                            <div class='out legend-icon'></div>Total Out
+                        </div>
+                    </div>
+                    <div class='ts-chart'></div>
+                </div>
+            </div>
+            #/*<div class="separator"></div>*/#
+
+            #/*<div class="example-title">Top Ports in Virtual Network #= name #</div>
+            <div class='volume-chart' id='vn-app-chart'></div>*/#
+            <div id='toggle-networkCharts' class='chart-toolbar'></div>
+            <div id='project-charts'> 
+                <div class='stack-div'>
+                    <div class="example-title">Top Ports in Virtual Network #= name #</div>
+                    <div class="volume-chart vn-app-chart"></div>
+                </div>
+                <div class='stack-div'>
+                    <div class="example-title">Top Peers in Virtual Network #= name #</div>
+                    <div class="volume-chart vn-peer-chart"></div>
+                </div>
+            </div>
+        </div>
+        <div id="network-external-links">
+            <div class="example-title">Virtual Networks connected to #= name #</div>
+            <div class='margin-auto table connected-vn-stats stats-row'></div>
+            <div class='volume-chart' style="width:600px" id='vn-external-chart'></div>
+        </div>
+    </div>
+</script>
+
+<script type='text/x-kendo-template' id='instance-template'>
+    <div id='instance-container' class='table'>
+        <div class='table-row'>
+            <div class='table-cell'>
+                <div class="example-title">Traffic Statistics for instance #= name # in Virtual Network #= network #</div>
+                <div class='margin-auto table inst-traffic-stats stats-row'> </div>
+                <div class="example-title">Traffic Statistics for instance #= name # across all Networks</div>
+                <div class='margin-auto table inst-total-stats stats-row'></div>
+                <div class='height-15'></div>
+                <div class='margin-auto table inst-summary-stats stats-row'></div>
+            </div>
+            <div class='table-cell'>
+                <div class="example-title">Traffic Statistics for instance #= name # across all Networks</div>
+                <div class='volume-chart' id='instance-chart'></div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="stats-row-template">
+    <div class="table-row">
+        #for(var i=0;i<data.length;i++) {#
+            #var cls='out';#
+            #if(i%2 == 0) {#
+                #var cls='in';#
+            #}#
+            <dl class="table-cell">
+                <dt class="example-subtitle">#= data[i]['lbl'] #</dt>
+                <dd class="#= cls# #= data[i]['cls'] #">
+                    #if(data[i]['value'] != null) {#
+                        #= data[i]['value']#
+                    #}#
+                </dd>
+            </dl>
+        #}#
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="stats-portlet">
+    <div class='k-block'>
+        <div class='k-header'>Hello</div>
+        <div class='table'>
+            <div class="table-row">
+                #for(var i=0;i<data.length;i++) {#
+                    #var cls='out';#
+                    #if(i%2 == 0) {#
+                        #var cls='in';#
+                    #}#
+                    <dl class="table-cell">
+                        <dt class="example-subtitle">#= data[i]['lbl'] #</dt>
+                        <dd class="#= cls# #= data[i]['cls'] #">
+                            #if(data[i]['value'] != null) {#
+                                #= data[i]['value']#
+                            #}#
+                        </dd>
+                    </dl>
+                #}#
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="domain-template">
+
+</script>
+<script type="text/x-kendo-template" id="project-template">
+    <div id='project-view'>
+        <div class="example-title">
+            Traffic Statistics for Project #= name #
+        </div>
+        <div class='project-stats' style='width:100%'>
+        </div>
+        <div class="separator"></div>
+        #/*<div class='chart-types'>
+            <span class='bar-icon chart-type selected'>B</span>
+            <span class='column-icon chart-type'>C</span>
+        </div>*/#
+        #/*<div class='toggle-group'>
+        </div>*/#
+        <div id='toggle-projectCharts' class='chart-toolbar'></div>
+        #/*<section id='toggle-projectCharts' class='toggle-section'>
+            <h3> Chart Type: </h3>
+            <ul class="toggle-options">
+                <li class="active" >Bar</li>
+                <li> | </li> 
+                <li>Column</li> 
+            </ul>
+        </section>*/#
+        #/*<div class='height-40'></div>*/#
+        <div id='project-charts' class='table'> 
+            <div class='table-row'>
+                <div class='stack-div table-cell'>
+                    <div class="example-title">Traffic Statistics for Virtual Networks</div>
+                    <!--<div class='k-block' style='background-color:white'>
+                        <div class='k-header'>Traffic Statistics for Virtual Networks</div>-->
+                        <div class="volume-chart vn-traffic-chart"></div>
+                    <!--</div>-->
+                </div>
+                <div class='table-cell' style='width:10px'></div>
+                <div class='stack-div table-cell'>
+                    <div class="example-title">Traffic Statistics across Virtual Networks</div>
+                    <!--<div class='k-block' style='background-color:white'>
+                        <div class='k-header'>Traffic Statistics across Virtual Networks</div>-->
+                        <div class="volume-chart intervn-traffic-chart"></div>
+                    <!--</div>-->
+                </div>
+            </div>
+        </div>
+        <ul class="toggle-options config-links">
+            <li><a>Settings</a></li>
+        </ul>
+        <div class='config-panel' id='config-Settings'>
+            <div class='close-icon'></div>
+            <span>Hello</span>
+        </div>
+</script>
+
+<script type="text/x-kendo-template" id="vn-link-template">
+    <div class="tab-pane">
+        <div class='example-title'>
+        # if(network == name.replace(/ \(Self\)$/,'')) {#
+            Traffic Statistics within Virtual Network #= network #</div>
+        #} else {#
+            Traffic Statistics between Virtual Network #= network # and #= name #</div>
+        #}#
+        #/*<div class="separator"></div>*/#
+        <div id='network-ts-interval'></div>
+        #/*<div id='timeseries-interval-tabs' class='filtering-tabs'></div>
+        <div class='chart-types' id='ts-chart-types'>
+            <span class='line-icon chart-type selected'>L</span>
+            <span class='area-icon chart-type'>A</span>
+        </div>*/#
+        <div id="link-chart-top">
+            <div class='ts-chart'></div>
+        </div>
+    </div>
+    #/*<div class="example-title">
+        # if(network == name) {#
+            Top Ports within Virtual Network #= network #</div>
+        #} else {#
+            Top Ports between Virtual Network #= network # and #= name #</div>
+        #}#
+    <div class='volume-chart' id='link-app-chart'></div>*/#
+    <div id='toggle-linkCharts' class='chart-toolbar'></div>
+    <div id='project-charts'> 
+        <div class='stack-div'>
+            <div class="example-title">
+                # if(network == name.replace(/ \(Self\)$/,'')) {#
+                    Top Ports within Virtual Network #= network #</div>
+                #} else {#
+                    Top Ports between Virtual Network #= network # and #= name #</div>
+                #}#
+            <div class="volume-chart link-app-chart"></div>
+        </div>
+        <div class='stack-div'>
+            <div class="example-title">
+                # if(network == name.replace(/ \(Self\)$/,'')) {#
+                    Top Peers within Virtual Network #= network #</div>
+                #} else {#
+                    Top Peers between Virtual Network #= network # and #= name #</div>
+                #}#
+            <div class="volume-chart link-peer-chart"></div>
+        </div>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="no-data">
+	<div class='no-data-text'>No Statistics available for this duration</div>
+</script>
+
+<script type="text/x-kendo-template" id="loading-mask">
+    <div class="k-loading-mask" id='tenant-monitor-loading-mask' style="width:50px;height:50px;">
+        <span class="k-loading-text">Loading...</span>
+        <div class="k-loading-image">
+            <div class="k-loading-color"></div>
+        </div>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="loading-template">
+	<div class="k-icon k-loading"></div>
+	Loading...
+</script>
+
+<script type="text/x-kendo-template" id="traffic-tooltip-template">
+	#var pktField = series.field.replace('Bytes','Pkts');#
+	<div> #= makePositive(dataItem[series.field]) + ' b (' + formatBytes(dataItem[series.field]) + ')'# <div>
+    #if(dataItem[pktField] != null) {#
+        <div style="text-align:left"> #= dataItem[pktField] + ' pkts</div>' #</div>
+    #}#
+	#/*console.info(JSON.stringify(dataItem));*/#
+</script>
+
+<script type="text/x-kendo-template" id="ts-tooltip-template">
+	<div> #= makePositive(value) + ' b (' + formatBytes(value) + ')' #</div>
+</script>
+
+<script type="text/x-kendo-template" id="label-template">
+    #var valueArr = stringUtil.splitStrToChunks(value); #
+    #for(var i=0;i<valueArr.length;i++) {#
+        #= valueArr[i] # 
+        #if(i != (valueArr.length -1)) {#
+            <tbreak/>
+        #}#
+    #}#
+</script>

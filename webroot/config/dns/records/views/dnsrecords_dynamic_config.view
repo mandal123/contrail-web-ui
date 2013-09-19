@@ -1,0 +1,31 @@
+<!--
+ Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
+-->
+<script type="text/x-kendo-template" id="gridDetails_dynamic_DNSRecord">
+	<div>
+		# var rawdata = data;#
+		# try{if(raw_json != null){ #
+			# rawdata = raw_json;#
+		#}}catch(e){}#
+	    <div class="row-fluid">
+	        <div class="row-fluid">
+	            <div class="span2"><label>Details :</label></div>
+	        </div>
+	        <div class="row-fluid">
+		        <div ><pre>#= JSON.stringify(rawdata,null,2)#</pre></div>
+		    </div>
+	    </div>
+	</div>
+</script>
+<script type="text/x-kendo-template" id="DNSRecords-dynamic-config-template">
+    <div class="row-fluid">
+            <div class="span12">
+                <div>
+                     <span class="control-label" style="display:inline">DNS Server:</span>
+	             <span class="control-label style="display:inline"  id="lblServer"></span>
+	        </div>			
+		
+                <div id="gridDynamicDNSRec" class="k-grid-contrail"/>
+            </div>
+    </div>
+</script>

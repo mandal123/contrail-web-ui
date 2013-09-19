@@ -1,0 +1,24 @@
+<!--
+ Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
+-->
+
+<script type="text/x-kendo-template" id="cdb-template">
+    <div id="cdb-container">
+    	<div id='cdb-results' class="k-grid-contrail"></div>
+    </div>
+</script>
+
+<script id="confirmation-template" type="text/x-kendo-template">
+    <p id="message" style="margin: 15px;">You requested to delete data from Config DB. <br>
+                                          Do you want to continue?</p>
+    <br>
+    <div style="display:block; text-align: center;">
+        <div style="display:inline;">
+            <button id="confirm" class="k-button btn btn-mini btn-primary">OK</button>
+        </div>
+        <div style="display:inline;">
+            <button id="cancel" class="k-button btn btn-mini">Cancel</button>
+        </div>
+    </div>
+    <br>
+</script>

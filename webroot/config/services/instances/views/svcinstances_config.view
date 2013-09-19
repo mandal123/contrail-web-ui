@@ -1,0 +1,264 @@
+<!--
+ Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
+-->
+
+<script type="text/x-kendo-template" id="gridsTempDetailSVCInstences">
+    <div>
+        <div class="row-fluid">
+            <div class="row-fluid">
+                <div class="span2"><label>Instance Name</label></div>
+                <div class="span10"> #: Service_Instance #</div>
+            </div>
+            <div class="row-fluid">
+                <div class="span2"><label>Template</label></div>
+                <div class="span10">#: Service_Template #</div>
+            </div>
+            <div class="row-fluid">
+                <div class="span2"><label>Number of instances</label></div>
+                <div class="span10">#: Number_of_instances #</div>
+            </div>
+            <div class="row-fluid">
+                <div class="span2"><label>Networks</label></div>
+                <div class="span10">#if(Left_Network != "") { #
+                                    #   var LN = Left_Network.split(":") #
+                                    #   if (LN.length > 1) { #
+                                            Left Network : #: LN[2] #
+                                    #   } else { #
+                                            Left Network : #: LN[0] #
+                                    #}} #
+                                    
+                                    #if(Right_Network != "") { #
+                                    #   if(Left_Network != "") { # , # } #
+                                    #   var RN = Right_Network.split(":") #
+                                    #   if (RN.length > 1) {#
+                                            Right Network : #: RN[2] #
+                                    #   } else { #
+                                            Right Network : #: RN[0] #
+                                    # }} #
+                                    
+                                    # if(Management_Network != "") { #
+                                    #    if(Left_Network != "" && Right_Network != "") { # , # } #
+                                    #    var MN = Management_Network.split(":") #
+                                    #    if (MN.length > 1) {#
+                                             Management Network :  #: MN[2] # </div>
+                                    #    } else { #
+                                             Management Network :  #: MN[0] # </div>
+                                    # }} #
+            </div>
+            <div class="row-fluid">
+                <div class="span2"><label>Instance Details</label></div>
+            </div>
+            # if(InstDetailArr.length == 0) {#
+                    No Service Instance found.
+            # } else {#
+                <div class="row-fluid" style="background:\\#f9f9f9">
+                    <div class="span2" style="background:\\#fff"></div>
+                    <div class="span2"><label>Virtual Machine</label></div>
+                    <div class="span1"><label>Status</label></div>
+                    <div class="span1"><label>Power State</label></div>
+                    <div class="span6">
+                        <div class="span10"><label>Networks</label></div>
+                        <div class="span2"><label></label></div>
+                    </div>
+                </div>
+                # for (var k = 0; k < InstDetailArr.length; k++) {#                         
+        
+                    <div class="row-fluid">
+                        <div class="span12">
+                        <div class="span2"></div>
+                        <div class="span2">#: InstDetailArr[k][1] #</div>
+                        <div class="span1">
+                            # var Stat = String(InstDetailArr[k][2]).toUpperCase();#
+                            # if(Stat == "SPAWNING"){ #
+                                <img src="/img/kendo/loading.gif">
+                            # } if(Stat == "INACTIVE"){ #
+                                <span class="status-badge-rounded status-inactive"></span>
+                            # } if(Stat == "PARTIALLY ACTIVE"){ #
+                                <img src="/img/kendo/loading.gif">
+                            # } if(Stat == "ACTIVE"){ #
+                                <span class="status-badge-rounded status-active"></span>
+                            # } #
+                            #: InstDetailArr[k][2] #
+                        </div>
+                        <div class="span1">#: InstDetailArr[k][3] #</div>
+                        <div class="span6">
+                        # var InstDetailStr = InstDetailArr[k][4].split("~~"); #
+                        # if(InstDetailStr.length > 1) { #
+                            <div class="span10">
+                        #   var msgSplit = InstDetailStr[0].split(" "); #
+                        #   var msgStr = msgSplit[msgSplit.length-1] + " IP Address not assigned.";  #
+                        #:  InstDetailStr[0] #
+                        #   for(var inc = 0;inc < InstDetailStr.length-1;inc++) { #
+                                &nbsp;&nbsp;<span class="status-badge-rounded status-inactive" title="#= msgStr #" ></span>
+                        #:      InstDetailStr[inc+1] #
+                        #   } #
+                            </div>
+                        # } else { #
+                            <div class="span10">#: InstDetailStr # </div>
+                        # } #
+                            <div class="span2"><u><a class="k-link" onClick="showViewConsoleWindow('#= InstDetailArr[k][0]#', '#= InstDetailArr[k][1]#');"> View Console </a></u></div>
+                        </div>
+                        </div>
+                    </div>
+                        
+                # } #
+            # } #
+        </div>
+    </div>
+
+</script>
+<div id="windowCreateSvcInstances" class="modal modal-700 hide" tabindex="-1">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="icon-remove"></i></button>
+        <h6 class="modal-header-title"></h6>
+    </div>
+    <div class="modal-body">
+        <form class="form-horizontal">
+            <div class="control-group">
+                <label class="control-label" class="span3">Instance Name</label>
+                <div class="controls">
+                    <div class="row-fluid">
+                        <input type="text" id="txtsvcInstanceName" class="span10"/>
+                    </div>
+                </div>
+            </div>
+            <div class="control-group ">
+                <label class="control-label" class="span3">Services Template</label>
+                <div class="controls">
+                    <div class="row-fluid">
+                        <select type="text" id="ddsvcTemplate" class="span10"></select>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="maxInstances" class="control-group">
+                <label class="control-label">Number of instances</label>
+                <div class="controls">
+                    <div class="row-fluid">
+                        <input type="text" id="txtMaximumInstances" class="span10"/>
+                    </div>
+                </div>
+            </div>
+<!--
+            <div class="control-group" id="autoScaling">
+                <label class="control-label">Service Scaling</label>
+                <div class="controls">
+                    <div class="row-fluid">
+                        <input class="ace-input" type="checkbox" id="chkAutoScaling" name="chkAutoScaling"' />
+                        <span class="ace-lbl">&nbsp;</span>
+                    </div>
+                </div>
+            </div>
+-->
+            <div class="control-group" id="lNetDiv">
+                <label class="control-label" class="span3">Left Network</label>
+                <div class="controls">
+                    <div class="row-fluid">
+                        <select type="text" id="ddlNet" class="span10"></select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-group" id="rNetDiv">
+                <label class="control-label" class="span3">Right Network</label>
+                <div class="controls">
+                    <div class="row-fluid">
+                        <select type="text" id="ddrNet" class="span10"></select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-group" id="mNetDiv">
+                <label class="control-label" class="span3">Management Network</label>
+                <div class="controls">
+                    <div class="row-fluid">
+                        <select type="text" id="ddmNet" class="span10"></select>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button id="btnCreatesvcInstencesCancel" class="btn btn-mini" data-dismiss="modal" aria-hidden="true">Cancel</button>
+        <button id="btnCreatesvcInstencesOK" class="btn btn-primary btn-mini">Save</button>
+    </div>
+</div>
+
+<div id="confirmDelete" class="modal modal-420 hide" tabindex="-1">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="icon-remove"></i></button>
+        <h6 class="modal-header-title"></h6>
+    </div>
+    <div class="modal-body">
+        <div class="row-fluid text-center">
+            <h6>Confirm Service Instances delete</h6>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button id="btnCnfDelSInstPopupCancel" class="btn btn-mini" data-dismiss="modal" aria-hidden="true">Cancel</button>
+        <button id="btnCnfDelSInstPopupOK" class="btn btn-primary btn-mini">Confirm</button>
+    </div>
+</div>
+
+<div id="consoleWindow" class="modal modal-420 hide" tabindex="-1">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="icon-remove"></i></button>
+        <h6 class="modal-header-title">Console Window</h6>
+    </div>
+    <div class="modal-body">
+        <form class="form-horizontal">
+            <div class="control-group row-fluid text-center">
+                <label class="control-label text-center span6"><a href="http://www.google.com">URL</a></label>
+            </div>
+        </form>
+    </div>
+</div>
+<script type='text/x-kendo-template' id='svcInstances-config-template'>
+    <div class="row-fluid">
+        <div class="row-fluid margin-0-0-10">
+            <select id="ddDomainSwitcher" class="span2"></select>
+            <select id="ddProjectSwitcher" class="span2"></select>
+            <div class="span8">
+                <button id="btnDeletesvcInstances" type="button" class="btn btn-primary btn-mini pull-right" disabled="disabled">Delete</button>
+                <button id="btnCreatesvcInstances" type="button" class="btn btn-primary btn-mini pull-right">Create</button>
+            </div>
+        </div>
+        <div class="row-fluid">
+            <div class="span12">
+                <div id="gridsvcInstances" class="k-grid-contrail"/>
+            </div>
+        </div>
+        <br>
+       <div id="vnc-console-widget" class="widget-box hide transparent">
+            <div class="widget-header row-fluid span12">
+                <h4 class="smaller span12">
+                    <span>
+                        <i class="icon-list-alt blue"></i>
+                        <span id="vnc-console-title">VNC Console</span>
+                    </span>
+                    <div class="widget-toolbar pull-right">
+                        <a data-action="close-hide">
+                            <i class="icon-remove"></i>
+                        </a>
+                    </div>
+                    <div class="widget-toolbar pull-right">
+                        <a data-action="collapse">
+                            <i class="icon-chevron-up"></i>
+                        </a>
+                    </div>
+                    <span id="consoleText" class="smaller text-center pull-right"></span>
+                </h4>
+            </div>
+            <div class="widget-body">
+                <div class="widget-main">
+                    <div class="row-fluid">
+                        <iframe id="vnc-console-frame" src="" class="span12 height-679"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+
+

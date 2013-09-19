@@ -1,0 +1,1114 @@
+<!--
+ Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
+-->
+
+<!-- Flow Tab View Begins -->
+
+<script id="message-template" type="text/x-kendo-template" xmlns="http://www.w3.org/1999/html">
+    <p id="message" style="margin: 20px;">#= msg #</p>
+    <br>
+
+    <div style="display:block; text-align: center;">
+        <div style="display:inline;">
+            <button id="confirm" class="k-button btn btn-mini btn-primary">OK</button>
+        </div>
+    </div>
+    <br>
+</script>
+
+<!-- Flow Tab View Ends -->
+
+<!-- Flow Series View Begins -->
+
+<script type="text/x-kendo-template" id="qe-template">
+    <div id="fqq-container">
+        <div id="fqq-widget" class="widget-box transparent hide">
+            <div class="widget-header">
+                <h4 class="smaller">
+                    <i class="icon-list blue"></i>
+                    Flow Query Queue
+                </h4>
+
+                <div class="widget-toolbar pull-right">
+                    <a data-action="collapse">
+                        <i class="icon-chevron-up"></i>
+                    </a>
+                </div>
+
+                <div class="widget-toolbar pull-right">
+                    <a onclick="deleteQueryCache4Queue('fqq');">
+                        <i class="icon-trash"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="widget-body">
+                <div class="widget-main">
+                    <div id='fqq-results' class="k-grid-contrail"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="fs-container">
+        <div id='fs-query'></div>
+        <div id="fs-result-widget" class="widget-box transparent hide">
+            <div class="widget-header">
+                <h4 class="smaller">
+                    <i class="icon-tasks blue"></i>
+                    Query Results
+                </h4>
+                <div class="widget-toolbar pull-right">
+                    <a data-action="collapse">
+                        <i class="icon-chevron-up"></i>
+                    </a>
+                </div>
+                <div class="widget-toolbar pull-right">
+                    <a title="Export as CSV" onclick="exportJSON2CSV('fs');"><i class="icon-download-alt"></i></a>
+                </div>
+                <div class="widget-toolbar pull-right">
+                    <a title="View Results as Grid" id="fs-results-link" class="margin-0-5 selected" data-toggle="dropdown" onclick="toggleToGrid();">
+                        <i class="icon-table"></i>
+                    </a>
+                    <a title="View Results as Chart" id="fs-chart-link" class="margin-0-5" data-toggle="dropdown" onclick="toggleToChart();">
+                        <i class="icon-bar-chart"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="widget-body">
+                <div class="widget-main">
+                    <div id='fs-results' class="k-grid-contrail"></div>
+                    <div id='fs-chart' class="hide">
+                        <div id="fs-chart-loading" class='k-loading custom'></div>
+                        <div id='ts-chart' class="height-400"></div>
+
+                        <div class="margin-15-0-0" data-bind="visible: isFCVisible">
+                            <div id='fs-flow-classes' class="k-grid-contrail"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="fr-container">
+        <div id='fr-query'></div>
+        <div id="fr-result-widget" class="widget-box transparent hide">
+            <div class="widget-header">
+                <h4 class="smaller">
+                    <i class="icon-tasks blue"></i>
+                    Query Results
+                </h4>
+
+                <div class="widget-toolbar pull-right">
+                    <a data-action="collapse">
+                        <i class="icon-chevron-up"></i>
+                    </a>
+                </div>
+                <div class="widget-toolbar pull-right">
+                    <a onclick="exportJSON2CSV('fr');" title="Export as CSV">
+                        <i class="icon-download-alt"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="widget-body">
+                <div class="widget-main">
+                    <div id='fr-results' class="k-grid-contrail"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="fs-query-template">
+    <div id="fs-query-widget" class="widget-box transparent">
+        <div class="widget-header">
+            <h4 class="smaller">
+                <i class="icon-search blue"></i>
+                Query Flow Series
+            </h4>
+
+            <div class="widget-toolbar pull-right">
+                <a data-action="collapse">
+                    <i class="icon-chevron-up"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="widget-body">
+            <div class="widget-main">
+				<form id="fs-query-form" onsubmit="return false;" class="">
+                    <div id="fs-query-container" class="row-fluid">
+                        <div class="row-fluid margin-0-0-5">
+                            <div class="span4">
+                                <label>Time Range</label>
+
+                                <div>
+                                    <select id="fs-time-range" name="timeRange" class="span12"
+                                            value=""
+                                            data-role="dropdownlist"
+                                            data-bind="source: timeRange, value: defaultTRValue" data-text-field="name"
+                                            data-value-field="value"
+                                            onchange="selectTimeRange(this, 'fs');">
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="span4" data-bind="visible: isCustomTRVisible">
+                                <label>From Time</label>
+
+                                <div>
+                                    <input id="fs-from-time" name="fromTime" class="span12"
+                                           value="" required="required"
+                                           validationMessage="From Time Required"/>
+                                    <span class="help-inline k-invalid-msg" data-for="fromTime"></span>
+                                </div>
+                            </div>
+                            <div class="span4" data-bind="visible: isCustomTRVisible">
+                                <label>To Time</label>
+
+                                <div>
+                                    <input id="fs-to-time" name="toTime" class="span12"
+                                           value="" required="required"
+                                           validationMessage="To Time Required"/>
+                                    <span class="help-inline k-invalid-msg" data-for="toTime"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row-fluid margin-0-0-5">
+                            <div class="span8">
+                                <label>Select</label>
+
+                                <div>
+                                    <div class="input-append inset span12">
+                                        <input id="fs-select" name="select" class="span12" type="text" value=""
+                                               required="required" validationMessage="Select Required"/>
+                                        <span class="add-on"><i class="icon-pencil" onclick="openFSSelect();"></i></span>
+                                    </div>
+                                    <span class="help-inline k-invalid-msg" data-for="select"></span>
+                                </div>
+                            </div>
+
+                            <div class="span4" data-bind="visible: isTGVisible">
+                                <label>Time Granularity</label>
+
+                                <div>
+                                    <input id="tg-value" name="tgValue" class="span3 pull-left"
+                                           type="text" value=""/>
+                                    <select id="tg-units" name="tgUnits" class="span3"
+                                            data-role="dropdownlist"
+                                            data-bind="source: tgUnits"
+                                            data-text-field="name" data-value-field="value">
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row-fluid margin-0-0-5">
+                            <div class="span8">
+                                <label>Where</label>
+
+                                <div>
+                                    <div class="input-append inset span12">
+                                        <textarea id="fs-where" name="where" class="span12" wrap="soft" value=""
+                                        	placeholder="*" rows="1"></textarea>
+                                        <span class="add-on"><i class="icon-pencil" onclick="openFSWhere();"></i></span>
+                                    </div>
+                                    <span class="help-inline k-invalid-msg" data-for="where"></span>
+                                </div>
+                            </div>
+
+                            <div class="span4">
+                                <label>Direction</label>
+
+                                <div>
+                                    <select id="fs-select-dir" class="span6"
+                                            name="direction" data-role="dropdownlist"
+                                            data-bind="source: direction" data-text-field="name"
+                                            data-value-field="value">
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row-fluid margin-0-0-5">
+                            <div class="span8">
+                                <label>Filter</label>
+
+                                <div>
+                                    <div class="input-append inset span12">
+                                        <input id="fs-filter" name="filters" class="span12"
+                                               type="text" value=""/>
+                                        <span class="add-on"><i class="icon-pencil" onclick="openFSFilter();"></i></span>
+                                    </div>
+                                    <span class="help-inline k-invalid-msg" data-for="filter"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row-fluid margin-15-0-0">
+                            <a id="fs-query-submit" class="btn btn-mini btn-primary"
+                               onclick="runFSQuery();"><span>Run Query</span></a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="fs-select-popup-template">
+    <div id="fs-select-popup-container" class="modal" tabindex="-1">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="icon-remove"></i></button>
+	    	<h6 class="modal-header-title">Select</h6>
+		</div>
+		<div class="modal-body">
+	        <form id="fs-select-popup-form" onsubmit="return false;">
+    	        <div class="row-fluid">
+        	        <div class="span4">
+            	        <input type="checkbox" name="srcVN" value="sourcevn"
+                		    data-bind="checked: checkedFields" class="ace-input"/> <span class="ace-lbl"> Source VN</span>
+                	</div>
+                	<div class="span4">
+                    	<input type="checkbox" name="destVN" value="destvn"
+                           data-bind="checked: checkedFields" class="ace-input"/> <span class="ace-lbl"> Destination VN</span>
+                	</div>
+                	<div class="span4">
+                    	<input type="checkbox" name="timeGranularity"
+                        	value="time-granularity"
+                           data-bind="checked: checkedFields"
+                           onchange="onChangeTGSelect(this);" class="ace-input"/> <span class="ace-lbl"> Time Granularity</span>
+           	     	</div>
+            	</div>
+       	 		<div class="row-fluid">
+                	<div class="span4">
+                    	<input type="checkbox" name="srcIP" value="sourceip"
+                           data-bind="checked: checkedFields" class="ace-input"/> <span class="ace-lbl"> Source IP</span>
+                	</div>
+                	<div class="span4">
+                    	<input type="checkbox" name="destIP" value="destip"
+                           data-bind="checked: checkedFields" class="ace-input"/> <span class="ace-lbl"> Destination IP</span>
+                	</div>
+                	<div class="span4">
+                    	<input type="checkbox" name="protocol" value="protocol"
+                           data-bind="checked: checkedFields" class="ace-input"/> <span class="ace-lbl"> Protocol</span>
+                	</div>
+            	</div>
+            	<div class="row-fluid margin-0-0-10">
+                	<div class="span4">
+                    	<input type="checkbox" name="srcPort" value="sport"
+                           data-bind="checked: checkedFields" class="ace-input"/> <span class="ace-lbl"> Source Port</span>
+                	</div>
+                	<div class="span4">
+                    	<input type="checkbox" name="destPort" value="dport"
+                           data-bind="checked: checkedFields" class="ace-input"/> <span class="ace-lbl"> Destination Port</span>
+                	</div>
+                    <div class="span4">
+                        <input type="checkbox" name="vrouter" value="vrouter"
+                               data-bind="checked: checkedFields" class="ace-input"/> <span class="ace-lbl"> Virtual Router</span>
+                    </div>
+            	</div>
+
+            	<div class="row-fluid">
+                	<div class="span4">
+                    	<input id="fs-select-bytes" type="checkbox" name="bstats"
+                           value="bytes"
+                           data-bind="checked: checkedFields, enabled: isEnabled['bytes']"
+                           onchange="onChangeFSSelect(this, ['sum(bytes)', 'sum(packets)']);" class="ace-input"/> <span class="ace-lbl"> Bytes</span>
+                	</div>
+                	<div class="span4">
+                    	<input id="fs-select-sum_bytes" type="checkbox"
+                           name="sumBStats" value="sum(bytes)"
+                           data-bind="checked: checkedFields, enabled: isEnabled['sum(bytes)']"
+                           onchange="onChangeFSSelect(this, ['bytes', 'packets']);" class="ace-input"/> <span class="ace-lbl"> SUM(Bytes)</span>
+                	</div>
+                	<!--
+                	<div style="display:inline-block; width:120px;">
+                    	<input type="checkbox" name="avgBStats" value="avg(bytes)" data-bind="checked: checkedFields"
+							class="ace-input"/> <span class="ace-lbl"> AVG(Bytes)</span>
+                	</div>
+               		-->
+            	</div>
+            	<div class="row-fluid margin-0-0-10">
+                	<div class="span4">
+                    	<input id="fs-select-packets" type="checkbox" name="pstats"
+                           value="packets"
+                           data-bind="checked: checkedFields, enabled: isEnabled['packets']"
+                           onchange="onChangeFSSelect(this, ['sum(bytes)', 'sum(packets)']);" class="ace-input"/> <span class="ace-lbl"> Packets</span>
+                	</div>
+                	<div class="span4">
+                    	<input id="fs-select-sum-packets" type="checkbox"
+                           name="sumPStats" value="sum(packets)"
+                           data-bind="checked: checkedFields, enabled: isEnabled['sum(packets)']"
+                           onchange="onChangeFSSelect(this, ['bytes', 'packets']);" class="ace-input"/> <span class="ace-lbl"> SUM(Packets)</span>
+                	</div>
+                	<!--
+                	<div style="display:inline-block; width:120px;">
+                    	<input type="checkbox" name="avgPStats" value="avg(packets)" data-bind="checked: checkedFields"
+							class="ace-input"/> <span class="ace-lbl"> AVG(Packets)</span>
+                	</div>
+               		-->
+            	</div>
+            </form>
+    	</div>
+		<div class="modal-footer">
+			<button class="btn btn-mini" data-dismiss="modal" aria-hidden="true" onclick="closePopupWindow('fs', 'selectWindow');">Cancel</button>
+	    	<button class="btn btn-primary btn-mini" onclick="addFSSelect();">Apply</button>
+		</div>
+	</div>
+</script>
+
+<script type="text/x-kendo-template" id="fs-where-popup-template">
+	<div id="fs-where-popup-container" class="modal modal-700 modal--500">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="icon-remove"></i></button>
+	    	<h6 class="modal-header-title">Where</h6>
+		</div>
+		<div class="modal-body">
+        	<div id="fs-pane-container" class="where-pane-container">
+            	<div id="fs-current-or-clause-pane">
+                	<div class='pane-content'>
+                    	<h5>Where Clause</h5>
+
+	                    <div id="fs-or-clauses">
+    	                </div>
+        	        </div>
+            	</div>
+
+	            <div id="fs-new-or-clause-pane">
+    	        </div>
+        	</div>
+	    </div>
+		<div class="modal-footer">
+			<button class="btn btn-mini" data-dismiss="modal" aria-hidden="true" onclick="closePopupWindow('fs', 'whereWindow');">Cancel</button>
+	    	<button class="btn btn-primary btn-mini" onclick="submitFSWhere();" >Apply</button>
+		</div>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="fs-edit-or-clause-template">
+    <div class='pane-content'>
+        <h5>Edit Where Clause</h5>
+
+        <form id="fs-where-popup-form" onsubmit="return false;">
+            <div>
+                <div id="fs-where-clause">
+                    # if(data.length != 0) { #
+                    # for (var i = 0; i < data.length; i++) { #
+                    # var id = 'fs-where-clause' + i; #
+                    	<div id='#= id#' class="row-fluid margin-0-0-5">
+                            <div class="pull-left margin-5">
+								<i class="icon-remove" onclick="deleteAppendedWhere('#= id#');"></i>
+							</div>
+							<select data-role="dropdownlist"
+                                    class="span3" name="field[]"
+                                    data-bind="source: selectFields, value: whereClauseEdit[#= i#].field"
+                                    data-text-field="name"
+                                    data-value-field="value"
+                                    onchange="loadWhereOptions('#= id#', 'fs', -1);">
+                            </select>
+                            <select data-role="dropdownlist" class="span1"
+                                    name="operator[]"
+                                    data-bind="source: opValues, value: whereClauseEdit[#= i#].operator"
+                                    data-text-field="name"
+                                    data-value-field="value">
+                            </select>
+                            <input class="span3" name="value[]" value=""
+                                   data-bind="value: whereClauseEdit[#= i#].value"/>
+							<div class="span3">
+                                    <input class="span12"
+                                       name="value2[]" value=""
+                                       data-bind="value: whereClauseEdit[#= i#].value2"/>
+							</div>
+                        	<p class="pull-right margin-5">AND</p>
+                        </div>
+                    # } #
+                    # } else {#
+                    	<div id="fs-first-where-clause" class="row-fluid margin-0-0-5">
+                            <div class="pull-left margin-5">
+								<i class="icon-remove" onclick="deleteAppendedWhere('fs-first-where-clause');"></i>
+							</div>
+							<select data-role="dropdownlist"
+                                    class="span3" name="field[]"
+                                    data-bind="source: selectFields"
+                                    data-text-field="name"
+                                    data-value-field="value"
+                                    onchange="loadWhereOptions('fs-first-where-clause', 'fs', -1);">
+                            </select>
+                            <select data-role="dropdownlist" class="span1"
+                                    name="operator[]"
+                                    data-bind="source: opValues"
+                                    data-text-field="name"
+                                    data-value-field="value">
+                            </select>
+                            <input class="span3" name="value[]"
+                                   value=""/>
+							<div class="span3">
+                            	<input class="span12"
+                                   name="value2[]" value=""/>
+							</div>
+
+							<p class="pull-right margin-5">AND</p>
+                        </div>
+                    # } #
+                </div>
+                <div class="row-fluid margin-5">
+					<i class="icon-plus icon-only" onclick="appendFSWhere();"></i>
+					# if(data.length != 0) { #
+                		<input type="button" value="Update Term" class="btn btn-primary btn-mini pull-right" onclick="editFSWhere();"/>
+               		# } else { #
+                    	<input type="button" value="Add Term" class="btn btn-primary btn-mini pull-right margin-0-5" onclick="addFSWhere();"/>
+                	# } #
+			    </div>
+            </div>
+        </form>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="fs-or-clause-template">
+    <div style="display:block">
+        <div style="display:inline-block;width:85%;">
+            <input type="radio" name="selectedORClause" value="-1"
+                   data-bind="checked: selectedORClauseIndex"
+                   onClick="selectORClause('fs', -1);"/> Add New Term
+        </div>
+    </div>
+    <BR>
+    # if(data.length != 0) { #
+    # for (var i = 0; i < data.length; i++) { #
+    <div style="display:block">
+        OR <br><br>
+    </div>
+    <div style="display:block">
+        <div style="display:inline-block;width:85%;">
+            <input type="radio" name="selectedORClause" value="#= i#"
+                   data-bind="checked: selectedORClauseIndex"
+                   onClick="selectORClause('fs', #= i#);"/> #= data[i] #
+        </div>
+        <div style="display:inline-block;" class="pull-right margin-5">
+			<i class="icon-remove" onclick="deleteFSWhereClause('#= data[i] #');"></i>
+       	</div>
+    </div>
+    <br>
+    # } #
+    # } #
+</script>
+
+<script type="text/x-kendo-template" id="fs-append-and-clause-template">
+    <div id="fs-appended-and-clause">
+        <div class="row-fluid margin-0-0-5">
+			<div id="fs-delete-new-and-clause" class="pull-left margin-5">
+				<i class="icon-remove"></i>
+			</div>
+        	<select id="fs-new-and-clause-field"
+            	data-role="dropdownlist" class="span3"
+              	name="field[]" data-bind="source: selectFields"
+                data-text-field="name" data-value-field="value">
+           	</select>
+        	<select data-role="dropdownlist" class="span1"
+           		name="operator[]" data-bind="source: opValues"
+                data-text-field="name" data-value-field="value">
+            </select>
+            <input class="span3" name="value[]" value=""/>
+			<div class="span3">
+	            <input class="span12" name="value2[]" value=""/>
+			</div>
+			<p class="pull-right margin-5">AND</p>
+		</div>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="fs-filter-popup-template">
+	<div id="fs-filter-popup-container" class="modal">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="icon-remove"></i></button>
+	    	<h6 class="modal-header-title">Filter</h6>
+		</div>
+		<div class="modal-body">
+    	    <form id="fs-filter-popup-form" onsubmit="return false;">
+        	    <h5>Sort By</h5>
+
+            	<div class="row-fluid">
+               		<div class="span4">
+						<input type="radio" name="sortBy" value="sourcevn"
+                           data-bind="enabled: isEnabled.sourcevn, checked: checkedOrderBy" class="ace-input"/> <span class="ace-lbl"> Source VN </span>
+                	</div>
+	                <div class="span4">
+    	                <input type="radio" name="sortBy" value="destvn"
+        	                data-bind="enabled: isEnabled.destvn, checked: checkedOrderBy" class="ace-input"/> <span class="ace-lbl"> Destination VN</span>
+                	</div>
+	                <div class="span4">
+    	                <input type="radio" name="sortBy" value="protocol"
+        		            data-bind="enabled: isEnabled.protocol, checked: checkedOrderBy" class="ace-input"/> <span class="ace-lbl"> Protocol</span>
+	                </div>
+    	        </div>
+        	    <div class="row-fluid">
+            	   	<div class="span4">
+                	    <input type="radio" name="sortBy" value="sourceip"
+                    		data-bind="enabled: isEnabled.sourceip, checked: checkedOrderBy" class="ace-input"/> <span class="ace-lbl"> Source IP</span>
+	                </div>
+    	            <div class="span4">
+        	            <input type="radio" name="sortBy" value="destip"
+                           data-bind="enabled: isEnabled.destip, checked: checkedOrderBy" class="ace-input"/> <span class="ace-lbl"> Destination IP</span>
+                	</div>
+                    <div class="span4">
+                        <input type="radio" name="sortBy" value="vrouter"
+                               data-bind="enabled: isEnabled.vrouter, checked: checkedOrderBy" class="ace-input"/> <span class="ace-lbl"> Virtual Router</span>
+                    </div>
+	            </div>
+	            <div class="row-fluid">
+    	           	<div class="span4">
+        	            <input type="radio" name="sortBy" value="sport"
+            		        data-bind="enabled: isEnabled.sport, checked: checkedOrderBy" class="ace-input"/> <span class="ace-lbl"> Source Port</span>
+	                </div>
+    	            <div class="span4">
+        	            <input type="radio" name="sortBy" value="dport"
+                           data-bind="enabled: isEnabled.dport, checked: checkedOrderBy" class="ace-input"/> <span class="ace-lbl"> Destination Port</span>
+	                </div>
+    	        </div>
+        	    <div class="row-fluid margin-10-0-0">
+            	   	<div class="span4">
+                	    <input type="radio" name="sortBy" value="bytes"
+                           data-bind="enabled: isEnabled.bytes, checked: checkedOrderBy" class="ace-input"/> <span class="ace-lbl"> Bytes</span>
+                	</div>
+	                <div class="span4">
+    	                <input type="radio" name="sortBy" value="sum(bytes)"
+                           data-bind="enabled: isEnabled['sum(bytes)'], checked: checkedOrderBy" class="ace-input"/> <span class="ace-lbl"> Sum(Bytes)</span>
+                	</div>
+            	</div>
+	           	<div class="row-fluid">
+    	       		<div class="span4">
+                    	<input type="radio" name="sortBy" value="packets"
+                           	data-bind="enabled: isEnabled.packets, checked: checkedOrderBy" class="ace-input"/> <span class="ace-lbl"> Packets</span>
+                	</div>
+	                <div class="span4">
+    	                <input type="radio" name="sortBy" value="sum(packets)"
+                           data-bind="enabled: isEnabled['sum(packets)'], checked: checkedOrderBy" class="ace-input"/> <span class="ace-lbl"> Sum(Packets)</span>
+                	</div>
+	            </div>
+    	        <div class="row-fluid margin-10-0">
+        	       	<div class="span4">
+						<label>Sort Order</label>
+						<div>
+    	    	    	    <select data-role="dropdownlist" name="sortOrder"
+        	            		data-bind="enabled: isEnabled.sort, source: orderTypes, value: sortOrder"
+            	            	class="span12" data-text-field="name"
+	            	            data-value-field="value">
+    	            	   	</select>
+						</div>
+					</div>
+				   	<div class="span4">
+						<label>Limit By</label>
+						<div>
+        	    	    	<input class="span12"
+                    	       type="text" name="limit" value=""
+                        	   data-bind="value: limit"/>
+						</div>
+					</div>
+        	    </div>
+	        </form>
+    	</div>
+		<div class="modal-footer">
+			<button class="btn btn-mini" data-dismiss="modal" aria-hidden="true" onclick="closePopupWindow('fs', 'filterWindow');">Cancel</button>
+	    	<button class="btn btn-primary btn-mini" onclick="addFSFilter();">Apply</button>
+		</div>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="no-data">
+    <div class='no-data-text pull-left'>No flow statistics found for chart in given duration.</div>
+</script>
+
+<script type="text/x-kendo-template" id="fs-bytes-tooltip-template">
+    <div> Sum(Bytes) = #= formatBytes4FSChart(value, 4) + formatTime4Tip(dataItem) #</div>
+</script>
+
+<script type="text/x-kendo-template" id="fs-pkts-tooltip-template">
+    <div> Sum(Packets) = #= value + formatTime4Tip(dataItem) #</div>
+</script>
+
+<!-- Flow Series View Ends -->
+
+<!-- Flow Record View Begins -->
+
+<script type="text/x-kendo-template" id="fr-query-template">
+    <div id="fr-query-widget" class="widget-box transparent">
+        <div class="widget-header">
+            <h4 class="smaller">
+                <i class="icon-search blue"></i>
+                Query Flow Records
+            </h4>
+
+            <div class="widget-toolbar pull-right">
+                <a data-action="collapse">
+                    <i class="icon-chevron-up"></i>
+                </a>
+            </div>
+        </div>
+        <div class="widget-body">
+            <div class="widget-main">
+                <form id="fr-query-form" onsubmit="return false;">
+                    <div id="fr-query-container" class="row-fluid">
+                        <div class="row-fluid margin-0-0-5">
+                            <div class="span4">
+                                <label>Time Range</label>
+
+                                <div>
+                                    <select id="fr-time-range" name="timeRange" class="span12"
+                                            value=""
+                                            data-role="dropdownlist"
+                                            data-bind="source: timeRange, value: defaultTRValue" data-text-field="name"
+                                            data-value-field="value"
+                                            onchange="selectTimeRange(this, 'fr');">
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="span4" data-bind="visible: isCustomTRVisible">
+                                <label>From Time</label>
+
+                                <div>
+                                    <input id="fr-from-time" name="fromTime" class="span12"
+                                           value="" required="required"
+                                           validationMessage="From Time Required"/>
+                                    <span class="help-inline k-invalid-msg" data-for="fromTime"></span>
+                                </div>
+                            </div>
+                            <div class="span4" data-bind="visible: isCustomTRVisible">
+                                <label>To Time</label>
+
+                                <div>
+                                    <input id="fr-to-time" name="toTime" class="span12"
+                                           value="" required="required"
+                                           validationMessage="To Time Required"/>
+                                    <span class="help-inline k-invalid-msg" data-for="toTime"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row-fluid margin-0-0-5">
+                            <div class="span8">
+                                <label>Select</label>
+
+                                <div>
+                                    <div class="input-append inset span12">
+                                        <input id="fr-select" name="select" class="span12" type="text" value=""
+                                               required="required" validationMessage="Select Required"/>
+                                        <span class="add-on"><i class="icon-pencil" onclick="openFRSelect();"></i></span>
+                                    </div>
+                                    <span class="help-inline k-invalid-msg" data-for="select"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row-fluid margin-0-0-5">
+                            <div class="span8">
+                                <label>Where</label>
+                                <div>
+                                    <div class="input-append inset span12">
+                                        <textarea id="fr-where" name="where" class="span12" wrap="soft" value="" placeholder="*" rows="1"></textarea>
+                                        <span class="add-on"><i class="icon-pencil" onclick="openFRWhere();"></i></span>
+                                    </div>
+                                    <span class="help-inline k-invalid-msg" data-for="where"></span>
+                                </div>
+                            </div>
+
+                            <div class="span4">
+                                <label>Direction</label>
+
+                                <div>
+                                    <select id="fr-select-dir" class="span6"
+                                            name="direction" data-role="dropdownlist"
+                                            data-bind="source: direction" data-text-field="name"
+                                            data-value-field="value">
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row-fluid margin-15-0-0">
+                            <a id="fr-query-submit" class="btn btn-mini btn-primary"
+                               onclick="runFRQuery();"><span>Run Query</span></a>
+                        </div>
+                        <!--
+                        <div style="display:block;margin:5px;">
+                            <div style="display:inline-block">
+                                <span style="width:110px;float:left">Filter</span>
+                                <input id="fr-filter" name="filter" style="width:740px;" class="k-textbox" type="text" value=""/>
+                                <a class="k-button" onclick="openFRFilter();"><span class="k-icon k-i-pencil"></span></a>
+                            </div>
+                            <div style="display:inline-block;margin-left:5px;">
+                                <input type="button" id="fr-query-submit" value="Run Query" class="k-button pull-left" onclick="runFRQuery();"/>
+                            </div>
+                        </div>
+                        -->
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="fr-select-popup-template">
+    <div id="fr-select-popup-container" class="modal" tabindex="-1">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="icon-remove"></i></button>
+	    	<h6 class="modal-header-title">Select</h6>
+		</div>
+		<div class="modal-body">
+        	<form id="fr-select-popup-form" onsubmit="return false;">
+            	<div class="row-fluid">
+                	<div class="span6">
+                    	<input type="checkbox" name="setupTime" value="setup_time"
+                           data-bind="checked: checkedFields" class="ace-input"/> <span class="ace-lbl"> Setup Time</span>
+                	</div>
+                	<div class="span6">
+                    	<input type="checkbox" name="teardownTime"
+                           value="teardown_time"
+                           data-bind="checked: checkedFields" class="ace-input"/> <span class="ace-lbl"> Teardown Time</span>
+                	</div>
+            	</div>
+            	<div class="row-fluid">
+                	<div class="span6">
+                    	<input type="checkbox" name="bstats" value="agg-bytes"
+                           data-bind="checked: checkedFields" class="ace-input"/> <span class="ace-lbl"> Aggregate Bytes</span>
+                	</div>
+                	<div class="span6">
+                    	<input type="checkbox" name="pstats" value="agg-packets"
+                           data-bind="checked: checkedFields" class="ace-input"/> <span class="ace-lbl"> Aggregate Packets</span>
+                	</div>
+            	</div>
+            </form>
+    	</div>
+		<div class="modal-footer">
+			<button class="btn btn-mini" data-dismiss="modal" aria-hidden="true" onclick="closePopupWindow('fr', 'selectWindow');">Cancel</button>
+	    	<button class="btn btn-primary btn-mini" onclick="addFRSelect();">Apply</button>
+		</div>
+	</div>
+</script>
+
+<script type="text/x-kendo-template" id="fr-where-popup-template">
+    <div id="fr-where-popup-container" class="modal modal-700 modal--500">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="icon-remove"></i></button>
+	    	<h6 class="modal-header-title">Where</h6>
+		</div>
+		<div class="modal-body">
+        	<div id="fr-pane-container" class="where-pane-container">
+	            <div id="fr-current-or-clause-pane">
+    	            <div class='pane-content'>
+        	            <h5>Where Clause</h5>
+		                <div id="fr-or-clauses">
+        	            </div>
+            	    </div>
+	            </div>
+
+    	        <div id="fr-new-or-clause-pane">
+        	    </div>
+	        </div>
+       	</div>
+		<div class="modal-footer">
+			<button class="btn btn-mini" data-dismiss="modal" aria-hidden="true" onclick="closePopupWindow('fr', 'whereWindow');">Cancel</button>
+	    	<button class="btn btn-primary btn-mini" onclick="submitFRWhere();" >Apply</button>
+		</div>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="fr-edit-or-clause-template">
+    <div class='pane-content'>
+        <h5>Edit Where Clause</h5>
+
+        <form id="fr-where-popup-form" onsubmit="return false;">
+            <div>
+                <div id="fr-where-clause">
+                    # if(data.length != 0) { #
+                    # for (var i = 0; i < data.length; i++) { #
+                    # var id = 'fr-where-clause' + i; #
+                    <div id='#= id#' class="row-fluid margin-0-0-5">
+						<div class="pull-left margin-5">
+							<i class="icon-remove" onclick="deleteAppendedWhere('#= id#');"></i>
+						</div>
+                        <select data-role="dropdownlist"
+                        	class="span3" name="field[]"
+                            data-bind="source: selectFields, value: whereClauseEdit[#= i#].field"
+                            data-text-field="name"
+                            data-value-field="value"
+                            onchange="loadWhereOptions('#= id#', 'fr', -1);">
+                        </select>
+                        <select data-role="dropdownlist" class="span1"
+	                        name="operator[]"
+    	                    data-bind="source: opValues, value: whereClauseEdit[#= i#].operator"
+                            data-text-field="name"
+                            data-value-field="value">
+                        </select>
+                        <input class="span3" name="value[]" value=""
+                            data-bind="value: whereClauseEdit[#= i#].value"/>
+                        <div class="span3">
+							<input class="span12"
+	                            name="value2[]" value=""
+    	                        data-bind="value: whereClauseEdit[#= i#].value2"/>
+						</div>
+                    	<p class="pull-right margin-5">AND</p>
+                    </div>
+                    # } #
+                    # } else {#
+                    <div id="fr-first-where-clause" class="row-fluid margin-0-0-5">
+						<div class="pull-left margin-5">
+							<i class="icon-remove" onclick="deleteAppendedWhere('fr-first-where-clause');"></i>
+						</div>
+                    	<select data-role="dropdownlist"
+                        	class="span3" name="field[]"
+                            data-bind="source: selectFields"
+                            data-text-field="name"
+                            data-value-field="value"
+                            onchange="loadWhereOptions('fr-first-where-clause', 'fr', -1);">
+                        </select>
+                        <select data-role="dropdownlist" class="span1"
+                        	name="operator[]"
+                            data-bind="source: opValues"
+                            data-text-field="name"
+                            data-value-field="value">
+                        </select>
+						<input class="span3" name="value[]"
+    	                	value=""/>
+        				<div class="span3">
+							<input class="span12"
+                            	name="value2[]" value=""/>
+                        </div>
+                    	<p class="pull-right margin-5">AND</p>
+                    </div>
+                    # } #
+                </div>
+				<div class="row-fluid margin-5">
+					<i class="icon-plus icon-only" onclick="appendFRWhere();"></i>
+					# if(data.length != 0) { #
+                		<input type="button" value="Update Term" class="btn btn-primary btn-mini pull-right" onclick="editFRWhere();"/>
+               		# } else { #
+                    	<input type="button" value="Add Term" class="btn btn-primary btn-mini pull-right margin-0-5" onclick="addFRWhere();"/>
+                	# } #
+			    </div>
+
+            </div>
+        </form>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="fr-or-clause-template">
+    <div style="display:block">
+        <div style="display:inline-block;width:85%;">
+            <input type="radio" name="selectedORClause" value="-1"
+                   data-bind="checked: selectedORClauseIndex"
+                   onClick="selectORClause('fr', -1);"/> Add New Term
+        </div>
+    </div>
+    <BR>
+    # if(data.length != 0) { #
+    # for (var i = 0; i < data.length; i++) { #
+    <div style="display:block">
+        OR <br><br>
+    </div>
+    <div style="display:block">
+        <div style="display:inline-block;width:85%;">
+            <input type="radio" name="selectedORClause" value="#= i#"
+                   data-bind="checked: selectedORClauseIndex"
+                   onClick="selectORClause('fr', #= i#);"/> #= data[i] #
+        </div>
+		<div style="display:inline-block;" class="pull-right margin-5">
+			<i class="icon-remove" onclick="deleteFRWhereClause('#= data[i] #');"></i>
+       	</div>
+    </div>
+    <br>
+    # } #
+    # } #
+</script>
+
+<script type="text/x-kendo-template" id="fr-append-and-clause-template">
+	<div id="fr-appended-and-clause">
+        <div class="row-fluid margin-0-0-5">
+			<div id="fr-delete-new-and-clause" class="pull-left margin-5">
+				<i class="icon-remove"></i>
+			</div>
+            <select id="fr-new-and-clause-field"
+            	data-role="dropdownlist" class="span3"
+                name="field[]" data-bind="source: selectFields"
+                data-text-field="name" data-value-field="value">
+            </select>
+            <select data-role="dropdownlist" class="span1"
+            	name="operator[]" data-bind="source: opValues"
+                data-text-field="name" data-value-field="value">
+            </select>
+            <input class="span3" name="value[]" value=""/>
+            <div class="span3">
+				<input class="span12"
+	                name="value2[]" value=""/>
+            </div>
+            <p class="pull-right margin-5">AND</p>
+        </div>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="fr-filter-popup-template">
+    <div id="fr-filter-popup-container" name="" class="popup">
+        <form id="fr-filter-popup-form" onsubmit="return false;">
+            <div style="display:block">
+                <div style="display:inline-block;">
+                    <strong>Order By</strong>
+                </div>
+            </div>
+            <br>
+
+            <div style="display:block">
+                <div style="display:inline-block; width:90px;">
+                    <input type="checkbox" name="orderBy" value="sourcevn"
+                           data-bind="checked: checkedOrderBy"/> Source VN
+                </div>
+                <div style="display:inline-block; width:80px;">
+                    <select data-role="dropdownlist" name="sourcevn-order"
+                            data-bind="source: orderTypes"
+                            style="margin:2px; width:60px;"
+                            data-text-field="name" data-value-field="value">
+                    </select>
+                </div>
+                <div style="display:inline-block; width:90px;">
+                    <input type="checkbox" name="orderBy" value="destvn"
+                           data-bind="checked: checkedOrderBy"/> Destination VN
+                </div>
+                <div style="display:inline-block; width:80px;">
+                    <select data-role="dropdownlist" name="destvn-order"
+                            data-bind="source: orderTypes"
+                            style="margin:2px; width:60px;"
+                            data-text-field="name" data-value-field="value">
+                    </select>
+                </div>
+            </div>
+            <div style="display:block">
+                <div style="display:inline-block; width:90px;">
+                    <input type="checkbox" name="orderBy" value="sourceip"
+                           data-bind="checked: checkedOrderBy"/> Source IP
+                </div>
+                <div style="display:inline-block; width:80px;">
+                    <select data-role="dropdownlist" name="sourceip-order"
+                            data-bind="source: orderTypes"
+                            style="margin:2px; width:60px;"
+                            data-text-field="name" data-value-field="value">
+                    </select>
+                </div>
+                <div style="display:inline-block; width:90px;">
+                    <input type="checkbox" name="orderBy" value="destip"
+                           data-bind="checked: checkedOrderBy"/> Destination IP
+                </div>
+                <div style="display:inline-block; width:80px;">
+                    <select data-role="dropdownlist" name="destip-order"
+                            data-bind="source: orderTypes"
+                            style="margin:2px; width:60px;"
+                            data-text-field="name" data-value-field="value">
+                    </select>
+                </div>
+            </div>
+            <div style="display:block">
+                <div style="display:inline-block; width:90px;">
+                    <input type="checkbox" name="orderBy" value="sport"
+                           data-bind="checked: checkedOrderBy"/> Source Port
+                </div>
+                <div style="display:inline-block; width:80px;">
+                    <select data-role="dropdownlist" name="sport-order"
+                            data-bind="source: orderTypes"
+                            style="margin:2px; width:60px;"
+                            data-text-field="name" data-value-field="value">
+                    </select>
+                </div>
+                <div style="display:inline-block; width:90px;">
+                    <input type="checkbox" name="orderBy" value="dport"
+                           data-bind="checked: checkedOrderBy"/> Destination Port
+                </div>
+                <div style="display:inline-block; width:80px;">
+                    <select data-role="dropdownlist" name="dport-order"
+                            data-bind="source: orderTypes"
+                            style="margin:2px; width:60px;"
+                            data-text-field="name" data-value-field="value">
+                    </select>
+                </div>
+            </div>
+            <div style="display:block">
+                <div style="display:inline-block; width:90px;">
+                    <input type="checkbox" name="orderBy" value="direction_ing"
+                           data-bind="checked: checkedOrderBy"/> Direction
+                </div>
+                <div style="display:inline-block; width:80px;">
+                    <select data-role="dropdownlist" name="direction-ing-order"
+                            data-bind="source: orderTypes"
+                            style="margin:2px; width:60px;"
+                            data-text-field="name" data-value-field="value">
+                    </select>
+                </div>
+
+                <div style="display:inline-block; width:90px;">
+                    <input type="checkbox" name="orderBy" value="protocol"
+                           data-bind="checked: checkedOrderBy"/> Protocol
+                </div>
+                <div style="display:inline-block; width:80px;">
+                    <select data-role="dropdownlist" name="protocol"
+                            data-bind="source: orderTypes"
+                            style="margin:2px; width:60px;"
+                            data-text-field="name" data-value-field="value">
+                    </select>
+                </div>
+                <br>
+                <br>
+
+                <div style="display:block">
+                    <div style="display:inline-block;width:50px;">
+                        <span style="width:60px;">Limit By</span>
+                    </div>
+                    <div style="display:inline-block;">
+                        <input style="margin:5px; width:80px;" class="k-textbox"
+                               type="text" name="limit" value=""
+                               data-bind="value: limit"/>
+                    </div>
+                </div>
+            </div>
+            <div style="display:block; width:335px;">
+                <div style="display:inline">
+                    <input type="button" value="Submit"
+                           class="k-button pull-right"
+                           onclick="addFRFilter();"/>
+                </div>
+            </div>
+            <br>
+        </form>
+    </div>
+</script>
+
+<!-- Flow Record View Ends -->
+
+<!-- Query Queue View Starts -->
+
+<script id="fqq-del-confirmation" type="text/x-kendo-template">
+    <p id="fqq-del-message" style="margin: 15px;" class="pull-left">Do you really want to clear the flows query queue?</p>
+    <br>
+    <div style="display:block; text-align: center;">
+        <div style="display:inline;">
+            <button id="fqq-del-confirm" class="k-button btn btn-mini btn-primary">OK</button>
+        </div>
+        <div style="display:inline;">
+            <button id="fqq-del-cancel" class="k-button btn btn-mini">Cancel</button>
+        </div>
+    </div>
+    <br>
+</script>
+
+<script id="fqq-confirmation" type="text/x-kendo-template">
+    <p id="fqq-message" style="margin: 15px;" class="pull-left">Your query has been queued. Do you want to view <br>
+                                              the query queue now?</p>
+    <br>
+    <div style="display:block; text-align: center;">
+        <div style="display:inline;">
+            <button id="fqq-confirm" class="k-button btn btn-mini btn-primary">OK</button>
+        </div>
+        <div style="display:inline;">
+            <button id="fqq-cancel" class="k-button btn btn-mini">Cancel</button>
+        </div>
+    </div>
+    <br>
+</script>
+
+<!-- Query Queue View Ends -->
+
+
+

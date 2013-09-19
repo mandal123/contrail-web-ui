@@ -1,0 +1,295 @@
+<!--
+ Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
+-->
+
+<script type='text/x-kendo-template' id='monitor-template'>
+    <div id='page-container'></div>
+    <div id="splitter" style="display:none;" class="contrail">
+        <div class='splitter-pane tree-pane'>
+            <div class='splitter-pane-content'>
+                <a id='k-tree-refresh-btn' class='k-button refresh-btn' onclick='javascript:refreshTree()' style='margin-right:10px;float:right;'>
+                    <span class='k-icon k-i-refresh'></span>
+                </a>
+                <div id='tree-loading' style='clear:both;'></div>
+                <div class="treeview-back" style='clear:both;'>
+                    <div id="treeNetworkTopology"></div>
+                </div>
+            </div>
+        </div>
+        <div class='splitter-pane'> 
+            <div class='splitter-pane-content'>
+                <a id='k-tree-refresh-btn' class='k-button refresh-btn' onclick='javascript:refreshContainer()' style='margin-right:10px;float:right;'>
+                    <span class='k-icon k-i-refresh'></span>
+                </a>
+                <div id='page-container' class='height-100'></div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type='text/x-kendo-template' id='provision-template'>
+    <h1> Infra Admin </h1>
+</script>
+
+<script type='text/x-kendo-template' id='chart-type-template'>
+    <section class='toggle-section'>
+        <h3> Chart Type: </h3>
+        <ul class="toggle-options">
+            <li class="active" >Bar</li>
+            <li> | </li> 
+            <li>Column</li> 
+        </ul>
+    </section>
+</script>
+<script type='text/x-kendo-template' id='interval-type-template'>
+    <section id='toggle-chartInterval' class='toggle-section'>
+        <h3> Interval: </h3>
+        <ul class="toggle-options">
+            <li><a>10m</a></li>
+            <li class='active'><a>1h</a></li> 
+            #/*<li><a>24h</a></li> */#
+        </ul>
+    </section>
+</script>
+
+<script type="text/x-kendo-template" id="stats-row-template">
+    <div class='table stats-row margin-auto'> 
+        <div class="table-row">
+            #for(var i=0;i<data.length;i++) {#
+                #var cls='out';#
+                #if(i%2 == 0) {#
+                    #var cls='in';#
+                #}#
+                <dl class="table-cell">
+                    <dt class="example-subtitle">#= data[i]['lbl'] #</dt>
+                    <dd class="#= cls# #= data[i]['cls'] #">
+                        #if(data[i]['value'] != null) {#
+                            #= data[i]['value']#
+                        #}#
+                    </dd>
+                </dl>
+            #}#
+        </div>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="summary-stats-template">
+    <div class='table stats-row margin-auto'> 
+        <div class="table-row">
+            #for(var i=0;i<data.length;i++) {#
+                #var cls='out';#
+                #if(i%2 == 0) {#
+                    #var cls='in';#
+                #}#
+                <dl class="table-cell">
+                    <dt class="example-subtitle">#= data[i]['lbl'] #</dt>
+                    <dd class="#= cls# #= data[i]['cls'] #" >
+                        <span data-bind='html:#= data[i]['field']#'></span>
+                        #if(data[i]['value'] != null) {#
+                            #= data[i]['value']#
+                        #}#
+                    </dd>
+                </dl>
+            #}#
+        </div>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="stats-portlet">
+    <div class='k-block'>
+        <div class='k-header'>Hello</div>
+        <div class='table'>
+            <div class="table-row">
+                #for(var i=0;i<data.length;i++) {#
+                    #var cls='out';#
+                    #if(i%2 == 0) {#
+                        #var cls='in';#
+                    #}#
+                    <dl class="table-cell">
+                        <dt class="example-subtitle">#= data[i]['lbl'] #</dt>
+                        <dd class="#= cls# #= data[i]['cls'] #">
+                            #if(data[i]['value'] != null) {#
+                                #= data[i]['value']#
+                            #}#
+                        </dd>
+                    </dl>
+                #}#
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="no-data">
+	<div class='no-data-text'>No Statistics available for this duration</div>
+</script>
+
+<script type="text/x-kendo-template" id="loading-mask">
+    <div class="k-loading-mask" id='tenant-monitor-loading-mask' style="width:50px;height:50px;">
+        <span class="k-loading-text">Loading...</span>
+        <div class="k-loading-image">
+            <div class="k-loading-color"></div>
+        </div>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="loading-template">
+	<div class="k-icon k-loading"></div>
+	Loading...
+</script>
+
+<script type="text/x-kendo-template" id="traffic-tooltip-template">
+	#var pktField = series.field.replace('Bytes','Pkts').replace('bytes','pkts');#
+	<div> #= makePositive(dataItem[series.field]) + ' B (' + formatBytes(dataItem[series.field]) + ')'# <div>
+    #if(dataItem[pktField] != null) {#
+        <div style="text-align:left"> #= dataItem[pktField] + ' pkts</div>' #</div>
+    #}#
+</script>
+<!--<script type="text/x-kendo-template" id="traffic-tooltip-template">
+    <div class="table chart-tooltip">
+        <div class="table-row">
+            <div class="table-cell lbl">Source VN</div> <div class="table-cell">&nbsp;:&nbsp;</div><div class="table-cell value">default-domain:demo:vn1</div>
+        </div>
+        <div class="table-row">
+            <div class="table-cell lbl">Source IP</div><div class="table-cell">&nbsp;:&nbsp;</div><div class="table-cell value">192.168.1.252</div>
+        </div>
+        <div class="table-row">
+            <div class="table-cell lbl">Dest VN</div> <div class="table-cell">&nbsp;:&nbsp;</div><div class="table-cell value">default-domain:demo:vn2</div>
+        </div>
+        <div class="table-row">
+            <div class="table-cell lbl">Dest IP</div> <div class="table-cell">&nbsp;:&nbsp;</div>  <div class="table-cell value">192.168.2.252</div>
+        </div>
+        <div class="table-row">
+            <div class="table-cell lbl">Protocol</div> <div class="table-cell">&nbsp;:&nbsp;</div>  <div class="table-cell value">1</div>
+        </div>
+        <div class="table-row">
+            <div class="table-cell lbl">Source Port</div> <div class="table-cell">&nbsp;:&nbsp;</div>  <div class="table-cell value">0</div>
+        </div>
+        <div class="table-row">
+            <div class="table-cell lbl">Dest Port</div> <div class="table-cell">&nbsp;:&nbsp;</div>  <div class="table-cell value">0</div>
+        </div>
+    </div>
+</script>-->
+
+<script type="text/x-kendo-template" id="ts-tooltip-template">
+	<div> #= formatTooltipDate(category) # <br/>  #= makePositive(value) + ' B (' + formatBytes(value) + ')' #</div>
+</script>
+
+<script type="text/x-kendo-template" id="label-template">
+    #var valueArr = stringUtil.splitStrToChunks(value); #
+    #for(var i=0;i<valueArr.length;i++) {#
+        #= valueArr[i] # 
+        #if(i != (valueArr.length -1)) {#
+            <tbreak/>
+        #}#
+    #}#
+</script>
+
+<script type="text/x-kendo-template" id="network-template">
+    <div class='network-template height-100'>
+        <div id="network-tabs" class="filtering-tabs height-100">
+            <ul> 
+                <li>Traffic Statistics</li> 
+                <li>Details</li> 
+            </ul>
+            <div>
+                <div class="main example-title">
+                    Traffic Statistics for Network (#= fqName.split(':').pop() #)
+                </div>
+                <div class="flow-series sub-title">
+                    #= durationTitle #
+                </div>
+                <div class='ts-chart height-300'></div>
+                <div class='summary-stats'></div>
+                <div class='summary-charts' style='height:300px'></div>
+            </div>
+            <div>
+                <div class='summary-stats'></div>
+                <div class='grid-cont'>
+                    <div class='display-inline height-200 width-2'>
+                        <div class='summary-charts'></div>
+                        #/*<div class='z-grid'></div>*/#
+                    </div>
+                    <div class='display-inline height-200 width-2'>
+                        <div class='z-grid'></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="port-detail-template">
+    <div class='port-detail-template'>
+        <div class="main example-title">#= title #</div>
+        <div class="flow-series sub-title">
+            #= durationTitle #
+        </div>
+        <div class="ts-chart height-300"></div>
+        <div class="grid-title">#= gridTitle #</div>
+        <div class="z-grid"></div>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="connected-nw-template">
+    <div class="main example-title">
+        # if(srcVN == fqName) {#
+            Traffic Statistics with in Network #= srcVN.split(':').pop()#  
+        #} else {#
+            Traffic Statistics between Network #= srcVN.split(':').pop()#  and #= fqName.split(':').pop() # 
+        #}#
+    </div>
+    <div class="flow-series sub-title">
+        #= durationTitle #
+    </div>
+    <div class='ts-chart height-300'></div>
+    <div class='summary-stats'></div>
+    <div class='summary-charts'></div>
+</script>
+
+<script type="text/x-kendo-template" id="inst-template">
+    <div class='inst-template height-100'>
+        <div class="main example-title">
+            #= title #
+        </div>
+        <div class="flow-series sub-title">
+            #= durationTitle #
+        </div>
+        <div class='ts-chart height-300'></div>
+        <div class='z-dropdown' id='dropdownIP'></div>
+        <div class='height-130'>
+            <div class='display-inline width-3 summary-stats'></div>
+            <div class='display-inline width-3 z-grid height-120'></div>
+            <div class='display-inline width-3 summary-stats'></div>
+        </div>
+        <div class='summary-charts'></div>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="summary-template">
+    <div class='summary-template height-100'>
+        <div class='summary-view height-100'>
+            <div class="main example-title">
+                #= title #
+            </div>
+            <div class='summary-stats' style='width:100%'></div>
+            <div class='summary-charts' style='height:500px' class='table'></div>
+        </div>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="list-template">
+    <div class='list-view'>
+        <div class="main example-title">
+            #= data['title'] #
+        </div>
+        <div class="sub-title">
+            #if(data['subTitle'] != null) {#
+                #=data['subTitle']#
+            # } else {#
+                Traffic Statistics for last 30 mins
+            #}#
+        </div>
+        <div class='z-grid'></div>
+    </div>
+</script>
+

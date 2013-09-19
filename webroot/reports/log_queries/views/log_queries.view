@@ -1,0 +1,877 @@
+<!--
+ Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
+-->
+
+<!-- Log Query View Begins -->
+
+<script id="message-template" type="text/x-kendo-template">
+    <p id="message" style="margin: 15px;">#= msg #</p>
+    <br>
+
+    <div style="display:block; text-align: center;">
+        <div style="display:inline;">
+            <button id="confirm" class="k-button btn btn-mini btn-primary">OK</button>
+        </div>
+    </div>
+    <br>
+</script>
+
+<!-- Log Query View Ends -->
+
+<!-- Logs View Begin -->
+
+<script type="text/x-kendo-template" id="msg-template">
+    <div id="lqq-container">
+        <div id="lqq-widget" class="widget-box transparent hide">
+            <div class="widget-header">
+                <h4 class="smaller">
+                    <i class="icon-list blue"></i>
+                    Log Query Queue
+                </h4>
+
+                <div class="widget-toolbar pull-right">
+                    <a data-action="collapse">
+                        <i class="icon-chevron-up"></i>
+                    </a>
+                </div>
+                <div class="widget-toolbar pull-right">
+                    <a onclick="deleteQueryCache4Queue('lqq');">
+                        <i class="icon-trash"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="widget-body">
+                <div class="widget-main">
+                    <div id='lqq-results' class="k-grid-contrail"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="sl-container">
+        <div id='sl-query'></div>
+        <div id="sl-result-widget" class="widget-box transparent hide">
+            <div class="widget-header">
+                <h4 class="smaller">
+                    <i class="icon-tasks blue"></i>
+                    Query Results
+                </h4>
+
+                <div class="widget-toolbar pull-right">
+                    <a data-action="collapse">
+                        <i class="icon-chevron-up"></i>
+                    </a>
+                </div>
+                <div class="widget-toolbar pull-right">
+                    <a onclick="exportJSON2CSV('sl');" title="Export as CSV">
+                        <i class="icon-download-alt"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="widget-body">
+                <div class="widget-main">
+                    <div id='sl-results' class="k-grid-contrail"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="ot-container">
+        <div id='ot-query'></div>
+        <div id="ot-results" class="k-grid-contrail hide"></div>
+        <div id="ot-select-window"></div>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="sl-query-template">
+    <div id="sl-query-widget" class="widget-box transparent">
+        <div class="widget-header">
+            <h4 class="smaller">
+                <i class="icon-search blue"></i>
+                Query System Logs
+            </h4>
+
+            <div class="widget-toolbar pull-right">
+                <a data-action="collapse">
+                    <i class="icon-chevron-up"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="widget-body">
+            <div class="widget-main">
+                <form id="sl-query-form" onsubmit="return false;">
+                    <div id="logs-query-container" class="row-fluid">
+                        <div class="row-fluid margin-0-0-5">
+                            <div class="span4">
+                                <label>Time Range</label>
+                                <div>
+                                    <select id="sl-time-range" name="timeRange" class="span12" value=""
+                                            data-role="dropdownlist"
+                                            data-bind="source: timeRange, value: defaultTRValue" data-text-field="name"
+                                            data-value-field="value"
+                                            onchange="selectTimeRange(this, 'sl');">
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="span4" data-bind="visible: isCustomTRVisible">
+                                <label>From Time</label>
+                                <div>
+                                    <input id="sl-from-time" name="fromTime" class="span12"
+                                           value="" required="required"
+                                           validationMessage="From Time Required"/>
+                                    <span class="help-inline k-invalid-msg" data-for="fromTime"></span>
+                                </div>
+                            </div>
+                            <div class="span4" data-bind="visible: isCustomTRVisible">
+                                <label>To Time</label>
+
+                                <div>
+                                    <input id="sl-to-time" name="toTime" class="span12"
+                                           value="" required="required"
+                                           validationMessage="To Time Required"/>
+                                    <span class="help-inline k-invalid-msg" data-for="toTime"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row-fluid margin-0-0-5">
+                            <div class="span8">
+                                <label>Where</label>
+                                <div>
+                                    <div class="input-append inset span12">
+                                        <textarea id="sl-where" name="where" class="span12" wrap="soft" value=""
+                                                  placeholder="*" rows="1"></textarea>
+                                        <span class="add-on"><i class="icon-pencil" onclick="openSLWhere();"></i></span>
+                                    </div>
+                                    <span class="help-inline k-invalid-msg" data-for="where"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row-fluid margin-0-0-5">
+                            <div class="span8">
+                                <label>Filter</label>
+                                <div>
+                                    <div class="input-append inset span12">
+                                        <input id="sl-filter" name="filters" class="span12"
+                                               type="text" value=""/>
+                                        <span class="add-on"><i class="icon-pencil" onclick="openSLFilter();"></i></span>
+                                    </div>
+                                    <span class="help-inline k-invalid-msg" data-for="filter"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row-fluid margin-0-0-5">
+                            <div class="span4">
+                                <label>Level</label>
+                                <div>
+                                    <select id="sl-select-level" class="span12" name="level" data-role="dropdownlist"
+                                            data-bind="value: selectedLevel, source: levels"
+                                            data-text-field="name"
+                                            data-value-field="value">
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row-fluid margin-15-0-0">
+                            <a id="sl-query-submit" class="btn btn-mini btn-primary"
+                               onclick="runSLQuery();"><span>Run Query</span></a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="sl-where-popup-template">
+    <div id="sl-where-popup-container" class="modal modal-700 modal--500">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="icon-remove"></i></button>
+	    	<h6 class="modal-header-title">Where</h6>
+		</div>
+		<div class="modal-body">
+        	<div id="sl-pane-container" class="where-pane-container">
+            	<div id="sl-current-or-clause-pane">
+                	<div class='pane-content'>
+                    	<h5>Where Clause</h5>
+
+	                    <div id="sl-or-clauses"></div>
+    	            </div>
+        	    </div>
+
+            	<div id="sl-new-or-clause-pane"></div>
+	        </div>
+		</div>
+		<div class="modal-footer">
+			<button class="btn btn-mini" data-dismiss="modal" aria-hidden="true" onclick="closePopupWindow('sl', 'whereWindow');">Cancel</button>
+	    	<button class="btn btn-primary btn-mini" onclick="submitSLWhere();">Apply</button>
+		</div>
+	</div>
+
+</script>
+
+<script type="text/x-kendo-template" id="sl-edit-or-clause-template">
+    <div class='pane-content'>
+        <h5>Edit Where Clause</h5>
+
+        <form id="sl-where-popup-form" onsubmit="return false;">
+            <div>
+                <div id="sl-where-clause">
+                    # if(data.length != 0) { #
+                    # for (var i = 0; i < data.length; i++) { #
+                    # var id = 'sl-where-clause' + i; #
+                    	<div id='#= id#' class="row-fluid margin-0-0-5">
+                   	 		<div class="pull-left margin-5">
+								<i class="icon-remove" onclick="deleteAppendedWhere('#= id#');"></i>
+							</div>
+                       	 <select data-role="dropdownlist"
+                        		class="span3" name="field[]"
+                            	data-bind="source: selectFields, value: whereClauseEdit[#= i#].field"
+                            	data-text-field="name"
+                            	data-value-field="value"
+                            	onchange="loadWhereOptions('#= id#', 'sl', -1);">
+                        	</select>
+                        	<select data-role="dropdownlist" class="span2"
+                        		name="operator[]"
+                            	data-bind="source: opValues, value: whereClauseEdit[#= i#].operator"
+                            	data-text-field="name"
+                            	data-value-field="value">
+                        	</select>
+                        	<input class="span3" name="value[]" value=""
+                        		data-bind="value: whereClauseEdit[#= i#].value"/>
+                        	<p class="pull-right margin-5">AND</p>
+                    	</div>
+                    # } #
+                    # } else {#
+                    	<div id="sl-first-where-clause" class="row-fluid margin-0-0-5">
+                            <div class="pull-left margin-5">
+								<i class="icon-remove" onclick="deleteAppendedWhere('sl-first-where-clause');"></i>
+							</div>
+                            <select data-role="dropdownlist"
+                            	class="span4" name="field[]"
+                                data-bind="source: selectFields"
+                                data-text-field="name"
+                                data-value-field="value"
+                                onchange="loadWhereOptions('sl-first-where-clause', 'sl', -1);">
+                            </select>
+                            <select data-role="dropdownlist" class="span2"
+                                name="operator[]"
+                                data-bind="source: opValues"
+                                data-text-field="name"
+                                data-value-field="value">
+                            </select>
+                            <input class="span4" name="value[]"
+                                   value=""/>
+                        	<p class="pull-right margin-5">AND</p>
+                   		</div>
+                    # } #
+                </div>
+				<div class="row-fluid margin-5">
+					<i class="icon-plus icon-only" onclick="appendSLWhere();"></i>
+					# if(data.length != 0) { #
+                		<input type="button" value="Update Term" class="btn btn-primary btn-mini pull-right" onclick="editSLWhere();"/>
+               		# } else { #
+                    	<input type="button" value="Add Term" class="btn btn-primary btn-mini pull-right margin-0-5" onclick="addSLWhere();"/>
+                	# } #
+			    </div>
+            </div>
+        </form>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="sl-or-clause-template">
+    <div style="display:block">
+        <div style="display:inline-block;width:85%;">
+            <input type="radio" name="selectedORClause" value="-1"
+                   data-bind="checked: selectedORClauseIndex"
+                   onClick="selectORClause('sl', -1);"/> Add New Term
+        </div>
+    </div>
+    <BR>
+    # if(data.length != 0) { #
+    # for (var i = 0; i < data.length; i++) { #
+    <div style="display:block">
+        OR <br><br>
+    </div>
+    <div style="display:block">
+        <div style="display:inline-block;width:85%;">
+            <input type="radio" name="selectedORClause" value="#= i#"
+                   data-bind="checked: selectedORClauseIndex"
+                   onClick="selectORClause('sl', #= i#);"/> #= data[i] #
+        </div>
+        <div style="display:inline-block;" class="pull-right margin-5">
+			<i class="icon-remove" onclick="deleteSLWhereClause('#= data[i] #');"></i>
+        </div>
+    </div>
+    <br>
+    # } #
+    # } #
+</script>
+
+<script type="text/x-kendo-template" id="sl-append-and-clause-template">
+    <div id="sl-appended-and-clause">
+        <div class="row-fluid margin-0-0-5">
+			<div id="sl-delete-new-and-clause" class="pull-left margin-5">
+				<i class="icon-remove"></i>
+			</div>
+            <select id="sl-new-and-clause-field"
+            	data-role="dropdownlist" class="span4"
+                name="field[]" data-bind="source: selectFields"
+                data-text-field="name" data-value-field="value">
+            </select>
+            <select data-role="dropdownlist" class="span2"
+            	name="operator[]" data-bind="source: opValues"
+                data-text-field="name" data-value-field="value">
+            </select>
+            <input class="span4" name="value[]" value=""/>
+			<p class="pull-right margin-5">AND</p>
+        </div>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="sl-filter-popup-template">
+    <div id="sl-filter-popup-container" class="modal modal-700">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="icon-remove"></i></button>
+	    	<h6 class="modal-header-title">Filter</h6>
+		</div>
+		<div class="modal-body">
+        	<div id="sl-new-filter">
+        	</div>
+        	<br>
+		</div>
+		<div class="modal-footer">
+			<button class="btn btn-mini" data-dismiss="modal" aria-hidden="true" onclick="closePopupWindow('sl', 'filterWindow');">Cancel</button>
+	    	<button class="btn btn-primary btn-mini" onclick="submitSLFilter();">Apply</button>
+		</div>
+	</div>
+</script>
+
+<script type="text/x-kendo-template" id="sl-edit-filter-clause-template">
+    <div>
+        <h5>Edit Filters</h5>
+
+        <form id="sl-filter-popup-form" onsubmit="return false;">
+            <div>
+                <div id="sl-filter-clause">
+                    # if(data.length != 0) { #
+                    # for (var i = 0; i < data.length; i++) { #
+                    # var id = 'sl-filter-clause' + i; #
+                    <div id='#= id#' class="row-fluid margin-0-0-5">
+                        <div class="pull-left margin-5">
+							<i class="icon-remove" onclick="deleteAppendedWhere('#= id#');"></i>
+						</div>
+                       	<select data-role="dropdownlist"
+                        	class="span4" name="field[]"
+                            data-bind="source: selectFields, value: filterClauseSubmit[#= i#].field"
+                            data-text-field="name"
+                            data-value-field="value"
+                            onchange="loadFilterOptions('#= id#', 'sl', -1);">
+                       	</select>
+                        <select data-role="dropdownlist"
+                        	class="span2" name="operator[]"
+                            data-bind="source: opValues, value: filterClauseSubmit[#= i#].operator"
+                            data-text-field="name"
+                            data-value-field="value">
+                        </select>
+                        <input class="span4" name="value[]" value=""
+                        	data-bind="value: filterClauseSubmit[#= i#].value"/>
+                        <p class="pull-right margin-5">AND</p>
+                    </div>
+                    # } #
+                    # } else {#
+                    <div id="sl-first-filter-clause" class="row-fluid margin-0-0-5">
+                        <div class="pull-left margin-5">
+							<i class="icon-remove" onclick="deleteAppendedWhere('sl-first-filter-clause');"></i>
+						</div>
+                        <select data-role="dropdownlist"
+                        	class="span4" name="field[]"
+                            data-bind="source: selectFields"
+                            data-text-field="name"
+                            data-value-field="value"
+                            onchange="loadFilterOptions('sl-first-filter-clause', 'sl', -1);">
+                       	</select>
+                        <select data-role="dropdownlist"
+                        	class="span2"
+                            name="operator[]"
+                            data-bind="source: opValues"
+                            data-text-field="name"
+                            data-value-field="value">
+                      	</select>
+                        <input class="span4" name="value[]"
+                        	value=""/>
+                        <p class="pull-right margin-5">AND</p>
+                    </div>
+                    # } #
+                </div>
+                <div class="row-fluid margin-5">
+					<i class="icon-plus icon-only" onclick="appendSLFilter();"></i>
+                </div>
+            </div>
+        </form>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="sl-append-filter-clause-template">
+    <div id="sl-appended-filter-clause" class="row-fluid margin-0-0-5">
+    	<div id="sl-delete-new-filter-clause" class="pull-left margin-5">
+			<i class="icon-remove"></i>
+		</div>
+        <select id="sl-new-filter-clause-field"
+        	data-role="dropdownlist" class="span4"
+            name="field[]" data-bind="source: selectFields"
+            data-text-field="name" data-value-field="value">
+        </select>
+        <select data-role="dropdownlist" class="span2"
+        	name="operator[]" data-bind="source: opValues"
+            data-text-field="name" data-value-field="value">
+        </select>
+        <input class="span4" name="value[]" value=""/>
+        <p class="pull-right margin-5">AND</p>        
+    </div>
+</script>
+
+<!-- Logs View Ends -->
+
+<!-- Trace View Begin -->
+
+<script type="text/x-kendo-template" id="ot-query-template">
+    <div id="ot-query-widget" class="widget-box transparent">
+        <div class="widget-header">
+            <h4 class="smaller">
+                <i class="icon-search blue"></i>
+                Query Object Logs
+            </h4>
+            <div class="widget-toolbar pull-right">
+                <a data-action="collapse">
+                    <i class="icon-chevron-up"></i>
+                </a>
+            </div>
+        </div>
+        <div class="widget-body">
+            <div class="widget-main">
+                <form id="ot-query-form" onsubmit="return false;">
+                    <div id="ot-query-container" class="row-fluid">
+                        <div class="row-fluid margin-0-0-5">
+                            <div class="span4">
+                                <label>Time Range</label>
+                                <div>
+                                    <select id="ot-time-range" name="timeRange" class="span12"
+                                            value=""
+                                            data-role="dropdownlist"
+                                            data-bind="source: timeRange, value: defaultTRValue" data-text-field="name"
+                                            data-value-field="value"
+                                            onchange="selectTimeRange(this, 'ot');">
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="span4" data-bind="visible: isCustomTRVisible">
+                                <label>From Time</label>
+                                <div>
+                                    <input id="ot-from-time" name="fromTime" class="span12"
+                                           value="" required="required"
+                                           validationMessage="From Time Required"/>
+                                    <span class="help-inline k-invalid-msg" data-for="fromTime"></span>
+                                </div>
+                            </div>
+                            <div class="span4" data-bind="visible: isCustomTRVisible">
+                                <label>To Time</label>
+                                <div>
+                                    <input id="ot-to-time" name="toTime" class="span12"
+                                           value="" required="required"
+                                           validationMessage="To Time Required"/>
+                                    <span class="help-inline k-invalid-msg" data-for="toTime"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row-fluid margin-0-0-5">
+                            <div class="span4">
+                                <label>Object Type</label>
+                                <div>
+                                    <select id="ot-select-obj-type" class="span12"
+                                            name="objectType" data-role="dropdownlist"
+                                            data-bind="source: objectTypes"
+                                            data-text-field="name" data-value-field="value"
+                                            onchange="loadOTSources();">
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="span4">
+                                <label>Object Id</label>
+                                <div>
+                                    <select id="ot-select-obj-id" class="span12"
+                                            name="objectId" data-role="combobox"
+                                            data-bind="source: objectIds" data-text-field="name"
+                                            data-value-field="value"
+                                            required="required"
+                                            validationMessage="Object Id Required">
+                                    </select>
+                                    <span class="k-invalid-msg" data-for="objectId"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row-fluid margin-0-0-5">
+                            <div class="span8">
+                                <label>Select</label>
+                                <div>
+                                    <div class="input-append inset span12">
+                                        <input id="ot-select" name="select" class="span12" type="text" value="ObjectLog, SystemLog" required="required" validationMessage="Select Required"/>
+                                        <span class="add-on"><i class="icon-pencil" onclick="openOTSelect();"></i></span>
+                                    </div>
+                                    <span class="help-inline k-invalid-msg" data-for="select"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row-fluid margin-0-0-5">
+                            <div class="span8">
+                                <label>Where</label>
+                                <div>
+                                    <div class="input-append inset span12">
+                                        <textarea id="ot-where" name="where" class="span12" wrap="soft" value="" placeholder="*" rows="1"></textarea>
+                                        <span class="add-on"><i class="icon-pencil" onclick="openOTWhere();"></i></span>
+                                    </div>
+                                    <span class="help-inline k-invalid-msg" data-for="where"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row-fluid margin-0-0-5">
+                            <div class="span8">
+                                <label>Filter</label>
+                                <div>
+                                    <div class="input-append inset span12">
+                                        <input id="ot-filter" name="filters" class="span12" type="text" value=""/>
+                                        <span class="add-on"><i class="icon-pencil" onclick="openOTFilter();"></i></span>
+                                    </div>
+                                    <span class="help-inline k-invalid-msg" data-for="filter"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row-fluid margin-15-0-0">
+                            <a id="ot-query-submit" class="btn btn-mini btn-primary" onclick="runOTQuery();"><span>Run Query</span></a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="ot-where-popup-template">
+    <div id="ot-where-popup-container" class="modal modal-700 modal--500">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="icon-remove"></i></button>
+	    	<h6 class="modal-header-title">Where</h6>
+		</div>
+		<div class="modal-body">
+	        <div id="ot-pane-container" class="where-pane-container">
+    	        <div id="ot-current-or-clause-pane">
+        	        <div class='pane-content'>
+            	        <h5>Where Clause</h5>
+	
+    	                <div id="ot-or-clauses">
+        	            </div>
+            	    </div>
+            	</div>
+
+	            <div id="ot-new-or-clause-pane">
+    	        </div>
+        	</div>
+        </div>
+		<div class="modal-footer">
+			<button class="btn btn-mini" data-dismiss="modal" aria-hidden="true" onclick="closePopupWindow('ot', 'whereWindow');">Cancel</button>
+	    	<button class="btn btn-primary btn-mini" onclick="submitOTWhere();">Apply</button>
+		</div>
+	</div>
+</script>
+
+<script type="text/x-kendo-template" id="ot-edit-or-clause-template">
+    <div class='pane-content'>
+        <h5>Edit Where Clause</h5>
+
+        <form id="ot-where-popup-form" onsubmit="return false;">
+            <div>
+                <div id="ot-where-clause">
+                    # if(data.length != 0) { #
+                    # for (var i = 0; i < data.length; i++) { #
+                    # var id = 'ot-where-clause' + i; #
+                    	<div id='#= id#' class="row-fluid margin-0-0-5">
+							<div class="pull-left margin-5">
+								<i class="icon-remove" onclick="deleteAppendedWhere('#= id#');"></i>
+							</div>
+                        	<select data-role="dropdownlist"
+                        		class="span4" name="field[]"
+                       		    data-bind="source: selectFields, value: whereClauseEdit[#= i#].field"
+                        	    data-text-field="name"
+                        	    data-value-field="value"
+                            	onchange="loadWhereOptions('#= id#', 'ot', -1);">
+                        	</select>
+                        	<select data-role="dropdownlist" class="span2"
+                        		name="operator[]"
+                            	data-bind="source: opValues, value: whereClauseEdit[#= i#].operator"
+                            	data-text-field="name"
+                            	data-value-field="value">
+                        	</select>
+                        	<input class="span4" name="value[]" value=""
+                            	data-bind="value: whereClauseEdit[#= i#].value"/>
+                        	<p class="pull-right margin-5">AND</p>
+                    	</div>
+                    # } #
+                    # } else {#
+                    	<div id="ot-first-where-clause" class="row-fluid margin-0-0-5">
+                            <div class="pull-left margin-5">
+								<i class="icon-remove" onclick="deleteAppendedWhere('ot-first-where-clause');"></i>
+							</div>
+                            <select data-role="dropdownlist"
+                            	class="span4" name="field[]"
+                                data-bind="source: selectFields"
+                                data-text-field="name"
+                                data-value-field="value"
+                                onchange="loadWhereOptions('ot-first-where-clause', 'ot', -1);">
+                            </select>
+                            <select data-role="dropdownlist" class="span2"
+                                name="operator[]"
+                                data-bind="source: opValues"
+                                data-text-field="name"
+                                data-value-field="value">
+                            </select>
+                            <input class="span4" name="value[]"
+                                value=""/>
+							<p class="pull-right margin-5">AND</p>
+                        </div>
+                    # } #
+                </div>
+                <div class="row-fluid margin-5">
+					<i class="icon-plus icon-only" onclick="appendOTWhere();"></i>
+                	# if(data.length != 0) { #
+                    	<input type="button" value="Update Term" class="btn btn-primary btn-mini pull-right" onclick="editOTWhere();"/>
+                    # } else { #
+                    	<input type="button" value="Add Term" class="btn btn-primary btn-mini pull-right margin-0-5" onclick="addOTWhere();"/>
+                    # } #
+                </div>
+            </div>
+        </form>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="ot-or-clause-template">
+    <div style="display:block">
+        <div style="display:inline-block;width:85%;">
+            <input type="radio" name="selectedORClause" value="-1"
+                   data-bind="checked: selectedORClauseIndex"
+                   onClick="selectORClause('ot', -1);"/> Add New Term
+        </div>
+    </div>
+    <BR>
+    # if(data.length != 0) { #
+    # for (var i = 0; i < data.length; i++) { #
+    <div style="display:block">
+        OR <br><br>
+    </div>
+    <div style="display:block">
+        <div style="display:inline-block;width:85%;">
+            <input type="radio" name="selectedORClause" value="#= i#"
+                   data-bind="checked: selectedORClauseIndex"
+                   onClick="selectORClause('ot', #= i#);"/> #= data[i] #
+        </div>
+        <div style="display:inline-block;" class="pull-right margin-5">
+			<i class="icon-remove" onclick="deleteOTWhereClause('#= data[i] #');"></i>
+        </div>
+    </div>
+    <br>
+    # } #
+    # } #
+</script>
+
+<script type="text/x-kendo-template" id="ot-append-and-clause-template">
+    <div id="ot-appended-and-clause" class="k-content">
+        <div class="row-fluid margin-0-0-5">
+			<div id="ot-delete-new-and-clause" class="pull-left margin-5">
+				<i class="icon-remove"></i>
+			</div>
+            <select id="ot-new-and-clause-field"
+            	data-role="dropdownlist" class="span4"
+                name="field[]" data-bind="source: selectFields"
+                data-text-field="name" data-value-field="value">
+            </select>
+            <select data-role="dropdownlist" class="span2"
+            	name="operator[]" data-bind="source: opValues"
+                data-text-field="name" data-value-field="value">
+            </select>
+            <input class="span4" name="value[]" value=""/>
+            <p class="pull-right margin-5">AND</p>    
+        </div>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="ot-filter-popup-template">
+    <div id="ot-filter-popup-container" class="modal modal-700">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="icon-remove"></i></button>
+	    	<h6 class="modal-header-title">Filter</h6>
+		</div>
+		<div class="modal-body">
+        	<div id="ot-new-filter">
+        	</div>
+		</div>
+		<div class="modal-footer">
+			<button class="btn btn-mini" data-dismiss="modal" aria-hidden="true" onclick="closePopupWindow('ot', 'filterWindow');">Cancel</button>
+	    	<button class="btn btn-primary btn-mini" onclick="submitOTFilter();">Apply</button>
+		</div>
+	</div>
+</script>
+
+<script type="text/x-kendo-template" id="ot-edit-filter-clause-template">
+    <div>
+        <h5>Edit Filters</h5>
+
+        <form id="ot-filter-popup-form" onsubmit="return false;">
+            <div>
+                <div id="ot-filter-clause">
+                    # if(data.length != 0) { #
+                    # for (var i = 0; i < data.length; i++) { #
+                    # var id = 'ot-filter-clause' + i; #
+                    	<div id='#= id#' class="row-fluid margin-0-0-5">
+							<div class="pull-left margin-5">
+								<i class="icon-remove" onclick="deleteAppendedWhere('#= id#');"></i>
+							</div>
+                     		<select data-role="dropdownlist"
+                            	class="span4" name="field[]"
+                                data-bind="source: selectFields, value: filterClauseSubmit[#= i#].field"
+                                data-text-field="name"
+                                data-value-field="value"
+                                onchange="loadFilterOptions('#= id#', 'ot', -1);">
+                            </select>
+                            <select data-role="dropdownlist"
+                            	class="span2"
+                                name="operator[]"
+                                data-bind="source: opValues, value: filterClauseSubmit[#= i#].operator"
+                                data-text-field="name"
+                                data-value-field="value">
+                            </select>
+                            <input class="span4" name="value[]" value=""
+                                   data-bind="value: filterClauseSubmit[#= i#].value"/>
+							<p class="pull-right margin-5">AND</p>
+                        </div>
+                    </div>
+                    # } #
+                    # } else {#
+                    	<div id="ot-first-filter-clause" class="row-fluid margin-0-0-5">
+                        	<div class="pull-left margin-5">
+								<i class="icon-remove" onclick="deleteAppendedWhere('ot-first-filter-clause');"></i>
+							</div>
+                            <select data-role="dropdownlist"
+                                    class="span4" name="field[]"
+                                    data-bind="source: selectFields"
+                                    data-text-field="name"
+                                    data-value-field="value"
+                                    onchange="loadFilterOptions('ot-first-filter-clause', 'ot', -1);">
+                            </select>
+                            <select data-role="dropdownlist"
+                                    class="span2" name="operator[]"
+                                    data-bind="source: opValues"
+                                    data-text-field="name"
+                                    data-value-field="value">
+                            </select>
+                            <input class="span4" name="value[]"
+                                   value=""/>
+							<p class="pull-right margin-5">AND</p>
+                        </div>
+                    </div>
+                    # } #
+                </div>
+                <div class="row-fluid margin-5">
+					<i class="icon-plus icon-only" onclick="appendOTFilter();"></i>
+                </div>
+            </div>
+        </form>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="ot-append-filter-clause-template">
+    <div id="ot-appended-filter-clause" class="k-content">
+        <div class="row-fluid margin-0-0-5">
+			<div id="ot-delete-new-filter-clause" class="pull-left margin-5">
+				<i class="icon-remove"></i>
+			</div>
+            <select id="ot-new-filter-clause-field"
+            	data-role="dropdownlist" class="span4"
+                name="field[]" data-bind="source: selectFields"
+                data-text-field="name" data-value-field="value">
+            </select>
+            <select data-role="dropdownlist" class="span2"
+            	name="operator[]" data-bind="source: opValues"
+                data-text-field="name" data-value-field="value">
+            </select>
+            <input class="span4" name="value[]" value=""/>
+			<p class="pull-right margin-5">AND</p>
+      	</div>
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="ot-select-popup-template">
+    <div id="ot-select-popup-container" class="modal modal-700">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="icon-remove"></i></button>
+	    	<h6 class="modal-header-title">Select</h6>
+		</div>
+		<div class="modal-body">
+        	<form id="ot-select-popup-form" onsubmit="return false;">
+            	<div class="row-fluid margin-0-0-5">	
+				# if(data.length != 0) { #
+            		# for (var i = 0; i < data.length; i++) { #
+            
+                		<div class="span6">
+                   			<input type="checkbox" name="#= data[i] #"
+                           		value="#= data[i] #"
+                           		data-bind="checked: checkedFields" class="ace-input"/> <span class="ace-lbl"> #= data[i] #</span>
+                		</div>
+	           	 	# } #
+	            # } #
+    			</div>
+			</form>
+		</div>
+		<div class="modal-footer">
+			<button class="btn btn-mini" data-dismiss="modal" aria-hidden="true" onclick="closePopupWindow('ot', 'selectWindow');">Cancel</button>
+	    	<button class="btn btn-primary btn-mini" onclick="addOTSelect();">Apply</button>
+		</div>
+    </div>
+</script>
+
+<!-- Trace View Ends -->
+
+<!-- Query Queue View Starts -->
+
+<script id="lqq-del-confirmation" type="text/x-kendo-template">
+    <p id="lqq-del-message" style="margin: 15px;" class="pull-left">Do you really want to clear the logs query queue?</p>
+    <br>
+    <div style="display:block; text-align: center;">
+        <div style="display:inline;">
+            <button id="lqq-del-confirm" class="k-button btn btn-mini btn-primary">OK</button>
+        </div>
+        <div style="display:inline;">
+            <button id="lqq-del-cancel" class="k-button btn btn-mini">Cancel</button>
+        </div>
+    </div>
+    <br>
+</script>
+
+<script id="lqq-confirmation" type="text/x-kendo-template">
+    <p id="lqq-message" style="margin: 15px;" class="pull-left">Your query has been queued. Do you
+                                              want to view <br>
+                                              the query queue now?</p>
+    <br>
+    <div style="display:block; text-align: center;">
+        <div style="display:inline;">
+            <button id="lqq-confirm" class="k-button btn btn-mini btn-primary">OK</button>
+        </div>
+        <div style="display:inline;">
+            <button id="lqq-cancel" class="k-button btn btn-mini">Cancel</button>
+        </div>
+    </div>
+    <br>
+</script>
+
+<!-- Query Queue View Ends -->

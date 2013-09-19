@@ -1,0 +1,140 @@
+<!--
+ Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
+-->
+ 
+<!-- PCAP Template Start -->
+
+<script type="text/x-kendo-template" id="pcap-template">
+	<div id="pcap-container" class="k-content" style="margin-left: 2%; margin-right: 2%;">
+		<h2>Packet Analyzers</h2>
+
+		<div id="grid-analyzer"></div>
+		<br>
+
+		<div id="grid-mirror"></div>
+	</div>
+</script>
+
+<script type="text/x-kendo-template" id="addMirrorTemplate">
+	<form id="add-mirror-form" onsubmit="return false;">
+		<div id="addMirror-container" class="popup">
+
+			<div style="display:block">
+				<div style="display:inline-block">
+					<span style="margin:5px;width:120px;float:left">Name</span>
+					<input name="mirror_name" style="margin:5px;width:120px;" class="k-textbox" type="text" value=""/>
+				</div>
+				<div style="display:inline-block">
+					<span style="margin:5px;width:120px;float:left">Analyzer Name</span>
+					<select data-role="dropdownlist" name="analyzer_name" style="margin:5px;width:120px;" data-bind="source: analyzers" data-text-field="name" data-value-field="name"></select>
+				</div>
+			</div>
+			<br>
+
+			<div style="display:block">
+				<div style="display:inline-block">
+					<span style="margin:5px;width:120px;float:left">Capture for VN</span>
+					<select id="cap-vn" name="apply_vn" data-role="dropdownlist" style="margin:5px;width:120px;" data-bind="source: applyVN" data-text-field="name" data-value-field="value"></select>
+					<select id="direction" data-role="dropdownlist" name="direction" style="margin:5px;width:115px;" class="dummy" onchange="showSelectedDirection()">
+						<option value="to">to --></option>
+						<option value="from"><-- from</option>
+					</select>
+					<select id="src-dst-vn" data-role="dropdownlist" name="src_dst_vn" style="margin:5px;width:120px;" data-bind="source: srcDstVN" data-text-field="name"
+					        data-value-field="value"></select>
+				</div>
+			</div>
+
+			<div style="display:block">
+				<div style="display:inline-block">
+					<span style="margin:5px;width:120px;float:left">Address</span>
+					<input style="margin:5px;width:120px;" class="k-textbox" type="text" name="apply_ips" value="" placeholder="any"
+					       title="Prefix on which rule should be applied i.e. 192.168.2.0/24"/>
+				</div>
+				<div style="display:inline-block">
+					<span id="address-direction" style="margin:5px;width:120px;float:left"></span>
+					<input style="margin:5px;width:120px;" class="k-textbox" type="text" name="src_dst_ips" value="" placeholder="any"
+					       title="Prefix on which rule should be applied i.e. 192.168.2.0/24"/>
+				</div>
+			</div>
+			<div style="display:block">
+				<div style="display:inline-block">
+					<span style="margin:5px;width:120px;float:left">Ports</span>
+					<input style="margin:5px;width:120px;" class="k-textbox" type="text" name="apply_ports" value="" placeholder="any" title="Port Range i.e. 80 or 8443-8446"/>
+				</div>
+				<div style="display:inline-block">
+					<span id="ports-direction" style="margin:5px;width:120px;float:left"></span>
+					<input style="margin:5px;width:120px;" class="k-textbox" type="text" name="src_dst_ports" value="" placeholder="any" title="Port Range i.e. 80 or 8443-8446"/>
+				</div>
+			</div>
+			<br>
+
+			<div style="display:block">
+				<div style="display:inline-block">
+					<span style="margin:5px;width:120px;float:left">IP Protocol</span>
+					<select data-role="dropdownlist" name="protocol" style="margin:5px;width:120px;" class="dummy">
+						<option value="6">TCP</option>
+						<option value="17">UDP</option>
+						<option value="1">ICMP</option>
+						<option value="-1">Any</option>
+					</select>
+				</div>
+
+				<div style="display:inline-block">
+					<span style="margin:5px;width:120px;float:left">Time Period</span>
+					<select data-role="dropdownlist" name="time_period" style="margin:5px;width:120px;" class="dummy" id="sel_${Math.floor(Math.random()*90000) + 10002}">
+						<option value="60">1 min</option>
+						<option value="120">2 mins</option>
+						<option value="300">5 mins</option>
+						<option value="600">10 mins</option>
+						<option value="1200">20 mins</option>
+					</select>
+				</div>
+			</div>
+
+			<br>
+
+			<div style='width:510px;' class='margin-auto'>
+				<div style="display:inline-block;float:right;">
+					<input type="button" id="mirror-submit" value="Submit" class="k-button pull-right" onclick="addMirror();"/>
+				</div>
+			</div>
+
+			<br>
+		</div>
+	</form>
+</script>
+
+<script type="text/x-kendo-template" id="addAnalyzerTemplate">
+	<div id="addAnalyzer-container" name="" class="popup">
+		<form id="add-analyzer-form" onsubmit="return false;">
+			<div style="display:block">
+				<div style="display:inline-block">
+					<span style="margin:5px;width:100px;float:left;">Analyzer Name</span>
+					<input id="analyzer-name" style="margin:5px;width:150px;float:right;" class="k-textbox" type="text" name="analyzerName" value=""/>
+				</div>
+			</div>
+			<br>
+
+			<div style="display:block">
+				<div style="display:inline">
+					<input type="button" id="analyzer-submit" value="Submit" class="k-button pull-right" onclick="addAnalyzer();"/>
+				</div>
+			</div>
+		</form>
+	</div>
+
+</script>
+
+<script type="text/x-kendo-template" id="toolbar-mirror-template">
+	<div class="toolbar">
+		<input id="add-mirror-button" name="addMirror" type="button" value="Attach Packet Capture" class='k-button' style="float:right;display:inline-block;width:150px;margin:5px"
+		       onclick="openAddMirror();"/>
+	</div>
+</script>
+<script type="text/x-kendo-template" id="toolbar-analyzer-template">
+	<div class="toolbar">
+		<input name="addAnalyzer" type="button" value="Add Analyzer" class='k-button' style="float:right;display:inline-block;width:150px;margin:5px" onclick="openAddAnalyzer();"/>
+	</div>
+</script>
+
+<!-- PCAP Template End -->

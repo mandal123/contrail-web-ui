@@ -1,0 +1,55 @@
+<!--
+ Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
+-->
+
+<script type='text/x-kendo-template' id='monitor-ping-template'>
+    <div class='contrail'>
+        <div id='pingContainer' class='container'>
+            <div class="pageTitle">Traffic Probe</div>
+            <div id='formPing' class='input-form k-widget k-header'>
+                #/*<fieldset>
+                <legend>Search Criteria</legend>*/#
+                <div>
+                    <label for='combovRouter'>vRouter</label>
+                    <select data-role='dropdownlist' name='ddListvRouter' id='ddListvRouter' data-bind="source: vRoutersVN" 
+							data-text-field="name" data-value-field="value"></select>
+                </div>
+                <div class='pull-down-10'>
+                    <label for='comboSrcIP'>From</label>
+                    <select data-role='dropdownlist' name='ddListvn' id='ddListvn' data-bind="source: sourceVN" 
+						data-text-field="name" data-value-field="value"></select>
+                    <label for='txtVN'>Network</label>
+                    <input class='k-textbox' id='txtVN' disabled='disabled'></input>
+                    <label for='comboDestIP'>To</label>
+                    <input class='k-textbox' id='comboDestIP' onkeyup="this.value=this.value.replace(/[^0-9.]/,'')"></input>
+                </div>
+                <div class='pull-down-10'>
+                    <label for='txtSrcPort'>Port</label>
+                    <input class='k-textbox' placeholder='Port Number' id='txtSrcPort' onkeyup="this.value=this.value.replace(/[^0-9]/,'')"></input>
+                    <label for='comboProtocol'>Protocol</label>
+                    <select data-role='dropdownlist' id='listProtocol'>
+	                    <option value='6'>TCP</option>
+	                    <option value='17'>UDP</option>
+                    </select>
+                    <label for='textDestPort'>Port</label>
+                    <input class='k-textbox'placeholder='Port Number'  id='txtDestPort' onkeyup="this.value=this.value.replace(/[^0-9]/,'')"></input>
+                </div>
+                <div class='pull-down-10'>
+                    <label for='txtPktSize'>Packet Size</label>
+                    <input class='k-textbox' placeholder='100 bytes' id='txtPktSize' onkeyup="this.value=this.value.replace(/[^0-9]/,'')"></input>
+                    <label for='txtCnt'>Count</label>
+                    <input class='k-textbox' placeholder='10 times' id='txtCnt'  onkeyup="this.value=this.value.replace(/[^0-9]/,'')"></input>
+                    <label for='txtInterval'>Interval</label>
+                    <input class='k-textbox' placeholder='secs' id='txtInterval' onkeyup="this.value=this.value.replace(/[^0-9]/,'')"></select>
+                </div>
+                <div class='pull-down-10 btn-holder'>
+                <button id='btnReset' class='k-button' >Reset</button>
+                    <button id='btnStartProbe' class='k-button' >Start Probe</button>
+                </div>
+                #/*</fieldset>*/#
+            </div>
+            <div class='subTitle'>Response:</div>
+            <div id='pingResponse' class='k-widget' style='overflow:scroll'></div>
+        </div>
+    </div>
+</script>
